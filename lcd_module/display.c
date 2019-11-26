@@ -3,7 +3,7 @@
 Test the DOGM-Display over SPI.
 
 */
-
+#define F_CPU 16000000 
 #include "dogm_lcd.h"
 #include <avr/io.h>
 #include <util/delay.h>
@@ -21,11 +21,11 @@ int main(void) {
 	
 
 	_delay_ms(2000);
-	
-	lcdWriteString("hallo");   // TBD: implement lcdWriteString ...
+	lcdWriteString("Fitim ist");   // TBD: implement lcdWriteString ...
 
 	_delay_ms(2000);
-
+	lcdSetCursor(1,1);
+	lcdWriteString("der Beste!!!");
 	/**
 	 * 
 	lcdOnOff(LCD_OFF);
