@@ -9,23 +9,34 @@ Test the DOGM-Display over SPI.
 #include <util/delay.h>
 
 
+void setTime(uint8_t hour, uint8_t minutes, uint8_t seconds){
+    lcdWriteChar(hour);
+    lcdWriteChar(':');
+    lcdWriteChar(minutes);
+    lcdWriteChar(':');
+    lcdWriteChar(seconds);
+    
+}
+
+void LCD_and_Spi_Init(){
+    // Initialize the SPI interface for the LCD display
+    lcdSpiInit();
+    
+    // Initialize the LCD display
+    lcdInit();
+}
 
 int main(void) {
 	int i = 5;
-	
-	// Initialize the SPI interface for the LCD display
-	lcdSpiInit();
-
-	// Initialize the LCD display
-	lcdInit();
-	
+    LCD_and_Spi_Init();
 
 	_delay_ms(2000);
-	lcdWriteString("Fitim ist");   // TBD: implement lcdWriteString ...
+    setTime(12,32,20);   // TBD: implement lcdWriteString ...
 
-	_delay_ms(2000);
+	/** _delay_ms(2000);
 	lcdSetCursor(1,1);
 	lcdWriteString("der Beste!!!");
+     */
 	/**
 	 * 
 	lcdOnOff(LCD_OFF);
