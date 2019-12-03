@@ -10,20 +10,39 @@ Test the DOGM-Display over SPI.
 #include <avr/interrupt.h> // Interrupts importieren
 #include <avr/sleep.h>
 
+static counterMenueEntry=0;
+void inttostr (uint16_t val, char * target)
+{
+	int8_t i;
+	
+	for (i=3; i >= 0; i--) {   // we have 4 significant digits (decimal)
+		
+		target[i] = (val % 10) + '0';  // get first digit and translate into ASCII
+		val /= 10;
+	}
+	target[4] = 0;   // zero terminated string;
+}
 
 void setTime(uint8_t hour, uint8_t minutes, uint8_t seconds){
-    lcdWriteChar(hour);
-    lcdWriteChar(':');
-    lcdWriteChar(minutes);
-    lcdWriteChar(':');
-    lcdWriteChar(seconds);
-    
+	if(counterMenueEntry<=0){
+		lcdSetCursor(-1,0);
+		lcdWriteString("Aktuelle Uhrzeit");
+		counterMenueEntry ++;
+	}
+	char timeline[9];
+	lcdSetCursor(0,1);
+	sprintf(timeline, "%0.2dh %0.2dm %0.2ds",hour, minutes, seconds);
+    lcdWriteString(timeline);
 }
-volatile
+
 ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
-    static uint8_t cnt_ms=0, cnt_s=0, cnt_min=0, cnt_hour=0;; // gloabl lifetime, local visibillity Counter for miliseconds
+    static uint8_t cnt_ms=0,cnt_ms_ten=0, cnt_s=0, cnt_min=26, cnt_hour=11; // gloabl lifetime, local visibillity Counter for miliseconds
     TCNT0 = 6; // counter auf 6 --> jede 256-6= 250 ticks --> 1 ms
     if(cnt_ms++>=100){
+		cnt_ms_ten++;
+		cnt_ms=0;
+	} 
+    if(cnt_ms_ten>=10){
         cnt_s++;
         if(cnt_s>=60){
             cnt_min++;
@@ -36,7 +55,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
             }
             cnt_s=0;
         }
-        cnt_ms=0;
+        cnt_ms_ten=0;
         setTime(cnt_hour,cnt_min,cnt_s);
     }
     
@@ -57,8 +76,6 @@ int main(void) {
     sei(); //enable interrupts(globally)
     
     LCD_and_Spi_Init();
-
-	_delay_ms(2000);
        // TBD: implement lcdWriteString ...
 
 	/** _delay_ms(2000);
