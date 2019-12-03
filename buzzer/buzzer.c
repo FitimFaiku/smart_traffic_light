@@ -25,7 +25,7 @@ void uart_transmit (uint8_t c)
 	UDR0 = c;//send character c
 }
 
-uart_receive ()
+uart_receive () 
 {
 	if((UCSR0A & (1<<RXC0)) !=0)
 	{
@@ -44,20 +44,18 @@ void uart_sendstring (char * str)
 
 ISR(TIMER0_OVF_vect) //timer 0 overflow interrupt service routine
 {
-	static uint8_t count1=0,count2=0; //static: global lifetime, local visibility		
+	static uint16_t count1=0,count2=0; //static: global lifetime, local visibility		
 	TCNT0 =231;				//25 ticks bis zum overflow
-	if(count2<=40){
-	if(frequenz>count1) PORTD |= (1<<5); //Led einschalten
-	else PORTD &= ~(1<<5); 				//Led ausschalten
-	count1++;
-	if(count1==10) count1=0;	// counter zurücksetzten
+	if(count2<=1000){
+		if(frequenz>count1) PORTD |= (1<<5); //Pin high setzen
+		else PORTD &= ~(1<<5); 				//Pin low setzen
+		count1++;
+		if(count1==10) count1=0;	// counter zurücksetzten
 	}
 	count2++;
-	if(count2>40){
-	PORTD &= ~(1<<5);
+	if(count2>=2000){
+		count2=0 ;
 	}
-	if(count2==60)count2=0;
-	
 }
 int main()
 {
