@@ -15,3 +15,7 @@ git push --> Aktuellen commit zu remote pushen. <br />
 ## States:
 
 1) Init -- depending on the sensor data(Clock) the Maste micro Controller switches the states to day_mode or night_mode
+
+
+## Sources 
+https://www.avrfreaks.net/forum/atmega32-interfacing-spi
