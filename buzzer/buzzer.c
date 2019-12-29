@@ -3,8 +3,9 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
-
-
+// TODO define 2 Frequences one for when the light is green another one when light is red also define a methode where inside is 
+ //an if statement when the master sends if green or not
+ 
 volatile uint16_t frequenz;
 
 void init_uart(uint32_t baudrate)

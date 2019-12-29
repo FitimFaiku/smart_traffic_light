@@ -46,6 +46,8 @@ void DS13xx_Read_CLK_Registers(void);
 
 #define BAUDRATE 115200
 
+//TODO define a Methode where the Time is send to the slave module(lcd Display).
+
 //0b1000000=40=@
 //0b1000001=41=A
 //0b1010000=50

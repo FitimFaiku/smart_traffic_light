@@ -36,6 +36,7 @@ void setTime(uint8_t hour, uint8_t minutes, uint8_t seconds){
 }
 
 ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
+	// TODO get those values from the master module and set them initialy and afterwards display them!!!
     static uint8_t cnt_ms=0,cnt_ms_ten=0, cnt_s=0, cnt_min=26, cnt_hour=11; // gloabl lifetime, local visibillity Counter for miliseconds
     TCNT0 = 6; // counter auf 6 --> jede 256-6= 250 ticks --> 1 ms
     if(cnt_ms++>=100){
@@ -60,6 +61,8 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
     }
     
 }
+
+// TODO add a new Methode where the secounds are counted down so it is visible when the traffic light changes from green to red 
 
 void LCD_and_Spi_Init(){
     // Initialize the SPI interface for the LCD display
