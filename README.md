@@ -14,8 +14,29 @@ git push --> Aktuellen commit zu remote pushen. <br />
 
 ## States:
 
-1) Init -- depending on the sensor data(Clock) the Maste micro Controller switches the states to day_mode or night_mode
+1) Init -- depending on the sensor data(Clock) the Maste micro Controller switches the states to day_mode or night_mode 
+    1.1) The masters microcontroller lcd display(Menue 1), displays the current time.
+    1.2) The masters microcontroller lcd display(Menue 2), displays which state(Red, Green) the (Cars, Walkers) have.
+2) Normal mode -- The Master Micro Controller decided that it is day time and starts the normal mode which says
+    2.1) The Slave Microcontroller sets an intervall for how long the light 
 
+### Codes 
+1) Tagesmodus -->  Init function set traffic Light green and Walker Red 
+2) Nachtmodus --> Send to slaves code 2 
+3) Switch to Red <b>Walker</b> Traffic Light
+4) Switch to Green <b>Walker</b> Traffic Light
+5) Switch to Red <b>Cars</b> Traffic Light
+6) Switch to Green <b>Cars</b> Traffic Light
+7) Switch to Yellow <b>Cars</b> Traffic Light
+8) Someone is near the <b>Walkers</b> Trafic Light (Slave to Master communication)
+9) Someone is near the <b>Cars</b> Trafic Light (Slave to Master communication)
 
 ## Sources 
 https://www.avrfreaks.net/forum/atmega32-interfacing-spi
+
+1) Tagesmodus 
+2) Nachtmodus 
+3) Switch to Red 
+4) Switch to Green
+5) Switch to Yellow
+5) Someone is near the Trafic Light (Slave to Master communication)
