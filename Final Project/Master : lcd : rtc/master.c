@@ -1,3 +1,4 @@
+#include "rtc/rtc.h"
 #include <string.h>
 #include <avr/io.h>
 #include <util/delay.h>
@@ -72,7 +73,6 @@ char SPI_MasterReceive(void) {
     /* Return Data Register */
     return SPDR;
 }
-
 
 int main() {
     uart_init(115200);

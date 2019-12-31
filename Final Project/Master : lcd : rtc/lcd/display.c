@@ -121,9 +121,6 @@ int main(void) {
     set_sleep_mode(SLEEP_MODE_IDLE);
 	while (1){
         sleep_mode(); //save power
-		//for(uint8_t i=0; i<5; i++) {
-		//	lcdWriteString("Hello World");
-		//}
 	} //endlessly
 
 /*we never reach this*/
