@@ -6,7 +6,7 @@
 
 volatile uint16_t messung=0;// messung für die entfernung
 
-
+// TODO define which length in cm is really close and also implement methode which sends the master module the information to switch to green
 
 void init_uart(uint32_t baudrate)
 {
