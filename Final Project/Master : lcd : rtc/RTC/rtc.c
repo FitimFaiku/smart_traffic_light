@@ -24,7 +24,7 @@
 
 #define F_CPU 16000000
 
-
+#include "rtc.h"
 #include <stdio.h>
 #include <avr/io.h> 
 #include <util/delay.h>
@@ -204,8 +204,6 @@ void DS13xx_Write_CLK_Registers(void) { // initialize time & date from user entr
 								  //If 7.bit=1 it counts from 1-12, in this case 5.bit=1 -> PM,  if 5.bit=0 -> AM
 	 DS13xx_Reset();
 }
-
-
 
 
 int main(void){
