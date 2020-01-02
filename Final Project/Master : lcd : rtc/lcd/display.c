@@ -12,6 +12,7 @@ Test the DOGM-Display over SPI.
 #include <stdbool.h> // Include bool
 
 static counterMenueEntry=0;
+
 void LCD_and_Spi_Init(){
     // Initialize the SPI interface for the LCD display
     lcdSpiInit();

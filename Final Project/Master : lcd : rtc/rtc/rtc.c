@@ -58,6 +58,7 @@ unsigned  char ClockHour = 0b00010011; //13  0001=1 0011=3 -> 13
 //unsigned char ClockDay;
 //unsigned char ClockMonth;
 
+/*
 void init_uart(uint32_t baudrate)
 {
 	uint16_t br = (F_CPU / 8 / baudrate)-1;
@@ -68,7 +69,8 @@ void init_uart(uint32_t baudrate)
 	// frame formate is correct no change in UCSROC 
 	UCSR0B |=(1<<TXEN0) + (1<<RXEN0); //1<<7  // enable receive and transmit
 }
-void uart_transmit(uint8_t c){
+*/
+/*void uart_transmit(uint8_t c){
 		while ((UCSR0A & (1<<UDRE0)) == 0); //or 1<<5 // waits until UDR empty
 		UDR0 = c; // send character c
 }
@@ -89,6 +91,7 @@ void uart_sendstring (char * str){
 			str++;
 	}
 }
+*/
 
 // Setup the DS13xx hardware
 void DS13xx_Init(void) {
@@ -171,8 +174,8 @@ void DS13xx_Read_CLK_Registers(void) { // loop read & display clock registers
 		char buffer[3];
 		itoa(ClockSecond,buffer,10); //converting the int value of ClockSecond to decimal value (10),
 									 //which will be saved in an array of char (buffer)
-		uart_sendstring(" Second:");
-		uart_sendstring(buffer);
+		//uart_sendstring(" Second:");
+		//uart_sendstring(buffer);
 	
 	 	DS13xx_WriteByte(0x83);	// for reading the min
 	 	ClockMinute = DS13xx_ReadByte();
@@ -180,8 +183,8 @@ void DS13xx_Read_CLK_Registers(void) { // loop read & display clock registers
 		DS13xx_Reset();
 		char bufferMinute[3];
 		itoa(ClockMinute,bufferMinute,10);
-		uart_sendstring(" Minute:");
-		uart_sendstring(bufferMinute);
+		//uart_sendstring(" Minute:");
+		//uart_sendstring(bufferMinute);
 
 	 	DS13xx_WriteByte(0x85);	// for reading the hour
 	 	ClockHour = DS13xx_ReadByte();
@@ -189,9 +192,9 @@ void DS13xx_Read_CLK_Registers(void) { // loop read & display clock registers
 		DS13xx_Reset();
 		char bufferHour[3];
 		itoa(ClockHour,bufferHour,10);
-		uart_sendstring(" Hour:");
-		uart_sendstring(bufferHour);
-		uart_sendstring("\r\n");
+		//uart_sendstring(" Hour:");
+		//uart_sendstring(bufferHour);
+		//uart_sendstring("\r\n");
 }
 
 void DS13xx_Write_CLK_Registers(void) { // initialize time & date from user entries
