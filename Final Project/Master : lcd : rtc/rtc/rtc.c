@@ -225,7 +225,7 @@ void init_DS13xx(){
 	DS13xx_Init();
 	DS13xx_Write_CLK_Registers(); */
 	
-	while(1){
+	//while(1){
 		/*
 		_delay_ms(1000);
 		DS13xx_Read_CLK_Registers(); // The Register will be read every Sec=1000ms

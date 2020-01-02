@@ -6,7 +6,7 @@
 #include <avr/interrupt.h>
 #include <stdlib.h>
 #include <string.h> //for itoa function
-
+#include <stdio.h> // For sprintf
 #define PORT_DIRECTION DDRB
 #define PORT_VALUE PORTB
 
