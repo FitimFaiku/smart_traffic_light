@@ -19,12 +19,16 @@
 
 #ifndef DS13xx_CE
 #define DS13xx_CE 5    //CHIP SELECTION
+#endif
 #ifndef DS13xx_IO
 #define DS13xx_IO 6 //Data
+#endif
 #ifndef DS13xx_SCLK
 #define DS13xx_SCLK 7 //Clock
+#endif
 #ifndef BAUDRATE
 #define BAUDRATE 115200
+#endif
 
 // Functions to control the rtc
 void DS13xx_Write_CLK_Registers();
@@ -35,4 +39,4 @@ void DS13xx_Reset(void);
 void DS13xx_Init(void);
 unsigned char get_Current_Hour(void);
 void init_DS13xx(void);
-#endif
+

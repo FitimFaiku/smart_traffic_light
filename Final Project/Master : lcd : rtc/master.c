@@ -41,9 +41,10 @@ void uart_transmit(char character) {
 }
 
 void uart_transmit_string(char *string) {
-    for (int i = 0; strcmp(string[i], '\0') != 0; i++) {
-        uart_transmit(string[i]);
-    }
+    while (*string){
+        uart_transmit(*string);
+            string++;
+        }
 }
 
 char uart_receive() {
