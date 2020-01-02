@@ -106,6 +106,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
         setTime(menueopencounter, cnt_hour,cnt_min,cnt_s);
         menueopencounter++;
         uart_transmit_string("I bims der Master huier \n\r");
+        DS13xx_Read_CLK_Registers();
     }
     
 }
@@ -118,10 +119,10 @@ int main() {
 	
     uart_init(115200);
     uart_transmit_string("I bims der Master\n\r");
-    //unsigned char currentHour;
+    unsigned char currentHour;
 
     DDRB |= SS;
-    SPI_MasterInit();
+    //SPI_MasterInit();
 
     // INIT for the real time clock
     init_DS13xx();
@@ -131,14 +132,14 @@ int main() {
     LCD_and_Spi_Init();
 
 
-    /**
+    
     currentHour = get_Current_Hour();
 
     char bufferHour[3];
     itoa(currentHour,bufferHour,10);
     uart_transmit_string("Current Time: ");
     uart_transmit_string(bufferHour);
-    */
+    
     TCCR0B = 3; // prescaler 64 -> 4us tick time, 250 ticks -- 1 ms
     TIMSK0 = 1 ; // enablen der overflow interrupts
     TCNT0 = 6; // counter auf 6 --> jede 256-6= 250 ticks --> 1 ms
