@@ -20,14 +20,13 @@ void LCD_and_Spi_Init(){
     lcdInit();
 }
 
-void setTime(uint8_t hour, uint8_t minutes, uint8_t seconds){
-	if(counterMenueEntry<=0){
-		lcdClear();
+void setTime(uint8_t counter, uint8_t hour, uint8_t minutes, uint8_t seconds){
+	if(counter<1){
+		//lcdClear();
 		lcdSetCursor(-1,0);
 		lcdWriteString("Aktuelle Uhrzeit");
-		counterMenueEntry++;
 	}
-	char timeline[9];
+	char timeline[8];
 	lcdSetCursor(0,1);
 	sprintf(timeline, "%0.2dh %0.2dm %0.2ds",hour, minutes, seconds);
     lcdWriteString(timeline);

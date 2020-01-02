@@ -83,7 +83,7 @@ char SPI_MasterReceive(void) {
 
 ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
 	// TODO get those values from the master module and set them initialy and afterwards display them!!!
-    static uint8_t cnt_ms=0,cnt_ms_ten=0, cnt_s=0, cnt_min=26, cnt_hour=11; // gloabl lifetime, local visibillity Counter for miliseconds
+    static uint8_t menueopencounter=0, cnt_ms=0,cnt_ms_ten=0, cnt_s=0, cnt_min=26, cnt_hour=11; // gloabl lifetime, local visibillity Counter for miliseconds
     TCNT0 = 6; // counter auf 6 --> jede 256-6= 250 ticks --> 1 ms
     if(cnt_ms++>=100){
 		cnt_ms_ten++;
@@ -103,7 +103,9 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
             cnt_s=0;
         }
         cnt_ms_ten=0;
-        setTime(cnt_hour,cnt_min,cnt_s);
+        setTime(menueopencounter, cnt_hour,cnt_min,cnt_s);
+        menueopencounter++;
+        uart_transmit_string("I bims der Master huier \n\r");
     }
     
 }
@@ -113,15 +115,16 @@ void check_Current_State_And_Update_If_Needed(void) {
 }
 
 int main() {
+	
     uart_init(115200);
     uart_transmit_string("I bims der Master\n\r");
-    unsigned char currentHour;
+    //unsigned char currentHour;
 
-    DDRB |= SS;
-    SPI_MasterInit();
+    //DDRB |= SS;
+    //SPI_MasterInit();
 
     // INIT for the real time clock
-    init_DS13xx();
+    //init_DS13xx();
 
     // Initialize the SPI interface for the LCD display
     // Initialize the LCD display
@@ -143,7 +146,7 @@ int main() {
     
 
     while (1) {
-        SS_SELECT
+        /*SS_SELECT
         _delay_ms(100);
         SPI_MasterTransmit('A');
         SS_UNSELECT
