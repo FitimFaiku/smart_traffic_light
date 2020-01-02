@@ -4,6 +4,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
+#include <stdlib.h>
 #include <string.h> //for itoa function
 
 #define PORT_DIRECTION DDRB
