@@ -103,8 +103,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
             cnt_s=0;
         }
         cnt_ms_ten=0;
-        setTime(counterMenueEntry, cnt_hour,cnt_min,cnt_s);
-        counterMenueEntry++;
+        setTime(cnt_hour,cnt_min,cnt_s);
     }
     
 }
