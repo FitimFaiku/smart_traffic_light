@@ -120,11 +120,11 @@ int main() {
     uart_transmit_string("I bims der Master\n\r");
     //unsigned char currentHour;
 
-    //DDRB |= SS;
-    //SPI_MasterInit();
+    DDRB |= SS;
+    SPI_MasterInit();
 
     // INIT for the real time clock
-    //init_DS13xx();
+    init_DS13xx();
 
     // Initialize the SPI interface for the LCD display
     // Initialize the LCD display
