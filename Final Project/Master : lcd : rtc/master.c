@@ -1,8 +1,10 @@
 #include "rtc/rtc.h"
+#include "lcd/dogm_lcd.h"
 #include <string.h>
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
+#include <string.h> //for itoa function
 
 #define PORT_DIRECTION DDRB
 #define PORT_VALUE PORTB
@@ -96,6 +98,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
             cnt_s=0;
         }
         cnt_ms_ten=0;
+        setTime(cnt_hour,cnt_min,cnt_s);
     }
     
 }
@@ -107,7 +110,7 @@ void check_Current_State_And_Update_If_Needed(void) {
 int main() {
     uart_init(115200);
     uart_transmit_string("I bims der Master\n\r");
-    char currentHour;
+    unsigned char currentHour;
 
     DDRB |= SS;
     SPI_MasterInit();
@@ -115,9 +118,17 @@ int main() {
     // INIT for the real time clock
     init_DS13xx();
 
-    currentHour = (char) get_Current_Hour();
+    // Initialize the SPI interface for the LCD display
+    // Initialize the LCD display
+    LCD_and_Spi_Init();
 
-    uart_transmit(currentHour);
+
+    currentHour = get_Current_Hour();
+
+    char bufferHour[3];
+    itoa(currentHour,bufferHour,10);
+    uart_transmit_string("Current Time: ");
+    uart_transmit_string(bufferHour);
 
     TCCR0B = 3; // prescaler 64 -> 4us tick time, 250 ticks -- 1 ms
     TIMSK0 = 1 ; // enablen der overflow interrupts

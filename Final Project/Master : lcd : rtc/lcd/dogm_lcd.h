@@ -102,6 +102,8 @@ void lcdOnOff(uint8_t mode);
 void lcdClear();
 void lcdSetCursor(uint8_t row, uint8_t col);
 void lcdCursorOnOff(uint8_t cursorOnOff, uint8_t positionOnOff);
+void LCD_and_Spi_Init();
+void setTime(uint8_t hour, uint8_t minutes, uint8_t seconds);
 
 // Functions to write to the display
 void lcdWriteChar(char x);

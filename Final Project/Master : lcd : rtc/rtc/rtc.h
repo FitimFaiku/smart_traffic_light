@@ -30,7 +30,7 @@
 void DS13xx_Write_CLK_Registers();
 void DS13xx_Read_CLK_Registers();
 unsigned char DS13xx_ReadByte();
-void DS13xx_WriteByte(unsigned char);
+void DS13xx_WriteByte(unsigned char W_Byte);
 void DS13xx_Reset(void);
 void DS13xx_Init(void);
 unsigned char get_Current_Hour(void);

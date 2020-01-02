@@ -1,6 +1,6 @@
 
-target = display
-objs = rtc/rtc.o, lcd/dogm_lcd.o
+target = master
+objs = rtc/rtc.o, lcd/dogm_lcd.o, lcd/display.o
 port = /dev/ttyACM0
 
 all: $(target).hex

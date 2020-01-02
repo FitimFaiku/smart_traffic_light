@@ -9,22 +9,20 @@ Test the DOGM-Display over SPI.
 #include <util/delay.h>
 #include <avr/interrupt.h> // Interrupts importieren
 #include <avr/sleep.h>
+#include <stdbool.h> // Include bool
 
 static counterMenueEntry=0;
-void inttostr (uint16_t val, char * target)
-{
-	int8_t i;
-	
-	for (i=3; i >= 0; i--) {   // we have 4 significant digits (decimal)
-		
-		target[i] = (val % 10) + '0';  // get first digit and translate into ASCII
-		val /= 10;
-	}
-	target[4] = 0;   // zero terminated string;
+void LCD_and_Spi_Init(){
+    // Initialize the SPI interface for the LCD display
+    lcdSpiInit();
+    
+    // Initialize the LCD display
+    lcdInit();
 }
 
 void setTime(uint8_t hour, uint8_t minutes, uint8_t seconds){
 	if(counterMenueEntry<=0){
+		lcdClear();
 		lcdSetCursor(-1,0);
 		lcdWriteString("Aktuelle Uhrzeit");
 		counterMenueEntry ++;
@@ -35,6 +33,21 @@ void setTime(uint8_t hour, uint8_t minutes, uint8_t seconds){
     lcdWriteString(timeline);
 }
 
+void setCounter(uint8_t counter, bool is_green){
+	if(is_green){
+		lcdSetCursor(-1,0);
+		lcdWriteString("Grün:");
+		char timeline[4];
+		sprintf(timeline, "%0.2ds",counter);
+	} else {
+		
+	}
+
+}
+
+
+
+/*
 ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
 	// TODO get those values from the master module and set them initialy and afterwards display them!!!
     static uint8_t cnt_ms=0,cnt_ms_ten=0, cnt_s=0, cnt_min=26, cnt_hour=11; // gloabl lifetime, local visibillity Counter for miliseconds
@@ -61,24 +74,19 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
     }
     
 }
+*/
 
 // TODO add a new Methode where the secounds are counted down so it is visible when the traffic light changes from green to red 
 
-void LCD_and_Spi_Init(){
-    // Initialize the SPI interface for the LCD display
-    lcdSpiInit();
-    
-    // Initialize the LCD display
-    lcdInit();
-}
 
-int main(void) {
-    TCCR0B = 3; // prescaler 64 -> 4us tick time, 250 ticks -- 1 ms
-    TIMSK0 = 1 ; // enablen der overflow interrupts
-    TCNT0 = 6; // counter auf 6 --> jede 256-6= 250 ticks --> 1 ms
-    sei(); //enable interrupts(globally)
+
+//int main(void) {
+    //TCCR0B = 3; // prescaler 64 -> 4us tick time, 250 ticks -- 1 ms
+    //TIMSK0 = 1 ; // enablen der overflow interrupts
+    //TCNT0 = 6; // counter auf 6 --> jede 256-6= 250 ticks --> 1 ms
+    //sei(); //enable interrupts(globally)
     
-    LCD_and_Spi_Init();
+    //LCD_and_Spi_Init();
        // TBD: implement lcdWriteString ...
 
 	/** _delay_ms(2000);
@@ -118,14 +126,15 @@ int main(void) {
 	lcdOnOff(LCD_ON);
 */
     //Sleep mode setzen(configurieren)
-    set_sleep_mode(SLEEP_MODE_IDLE);
-	while (1){
-        sleep_mode(); //save power
-	} //endlessly
+//    set_sleep_mode(SLEEP_MODE_IDLE);
+//	while (1){
+//        sleep_mode(); //save power
+//	} //endlessly
 
 /*we never reach this*/
-return 0;
-}
+//return 0;
+//}
+
 
 
 
