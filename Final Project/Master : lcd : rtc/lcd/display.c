@@ -10,8 +10,9 @@ Test the DOGM-Display over SPI.
 #include <avr/interrupt.h> // Interrupts importieren
 #include <avr/sleep.h>
 #include <stdbool.h> // Include bool
+#include <stdio.h> // For sprintf
 
-static counterMenueEntry=0;
+static uint8_t counterMenueEntry=0;
 
 void LCD_and_Spi_Init(){
     // Initialize the SPI interface for the LCD display
