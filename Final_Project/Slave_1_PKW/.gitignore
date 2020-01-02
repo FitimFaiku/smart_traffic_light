@@ -1,27 +1,9 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
-/node_modules
-/.pnp
-/styleguide
-.pnp.js
-
-# Build directory
-*.iml
-/reports
-
-# production
-/build
+#make not in git
+*.elf
+*.hex
+*.o
 
 # misc
 .DS_Store
-
-/.vscode
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-.scannerwork
-target/
-.idea/
-coverage
