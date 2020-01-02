@@ -205,18 +205,31 @@ void DS13xx_Write_CLK_Registers(void) { // initialize time & date from user entr
 	 DS13xx_Reset();
 }
 
+unsigned char get_Current_Hour(void){
+	DS13xx_WriteByte(0x85);	// for reading the hour
+	ClockHour = DS13xx_ReadByte();
+	ClockHour = (ClockHour & 0x0F) + ((ClockHour & 0x10)>>4)*10;
+	return ClockHour;
+}
 
-int main(void){
-	
-	init_uart(BAUDRATE);
-	uart_sendstring("Welcom!\r\n"); 	
+
+void init_DS13xx(){
 	DS13xx_Init();
 	DS13xx_Write_CLK_Registers();
+}
+
+//int main(void){
+	
+	/* init_uart(BAUDRATE);
+	uart_sendstring("Welcom!\r\n"); 	
+	DS13xx_Init();
+	DS13xx_Write_CLK_Registers(); */
 	
 	while(1){
+		/*
 		_delay_ms(1000);
 		DS13xx_Read_CLK_Registers(); // The Register will be read every Sec=1000ms
 		uart_sendstring("\r\n");
-	}
-
-}
+		*/
+//	}
+//}

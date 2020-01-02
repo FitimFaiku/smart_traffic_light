@@ -74,16 +74,64 @@ char SPI_MasterReceive(void) {
     return SPDR;
 }
 
+ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
+	// TODO get those values from the master module and set them initialy and afterwards display them!!!
+    static uint8_t cnt_ms=0,cnt_ms_ten=0, cnt_s=0, cnt_min=26, cnt_hour=11; // gloabl lifetime, local visibillity Counter for miliseconds
+    TCNT0 = 6; // counter auf 6 --> jede 256-6= 250 ticks --> 1 ms
+    if(cnt_ms++>=100){
+		cnt_ms_ten++;
+		cnt_ms=0;
+	} 
+    if(cnt_ms_ten>=10){
+        cnt_s++;
+        if(cnt_s>=60){
+            cnt_min++;
+            if(cnt_min>=60){
+                cnt_hour++;
+                if(cnt_hour>=24){
+                    cnt_hour=0;
+                }
+                cnt_min=0;
+            }
+            cnt_s=0;
+        }
+        cnt_ms_ten=0;
+    }
+    
+}
+
+void check_Current_State_And_Update_If_Needed(void) {
+
+}
+
 int main() {
     uart_init(115200);
-
     uart_transmit_string("I bims der Master\n\r");
+    char currentHour;
 
     DDRB |= SS;
     SPI_MasterInit();
 
+    // INIT for the real time clock
+    init_DS13xx();
+
+    currentHour = (char) get_Current_Hour();
+
+    uart_transmit(currentHour);
+
+    TCCR0B = 3; // prescaler 64 -> 4us tick time, 250 ticks -- 1 ms
+    TIMSK0 = 1 ; // enablen der overflow interrupts
+    TCNT0 = 6; // counter auf 6 --> jede 256-6= 250 ticks --> 1 ms
+    sei(); //enable interrupts(globally)
+    
+    SS_SELECT
+    _delay_ms(100);
+    SPI_MasterTransmit('A');
+    SS_UNSELECT
+
+
     while (1) {
-        SS_SELECT
+       /* SS_SELECT
         _delay_ms(100);
         SPI_MasterTransmit('A');
         SS_UNSELECT
@@ -97,6 +145,7 @@ int main() {
         uart_transmit_string("0 Gesendet\n\r");
         SS_UNSELECT
         _delay_ms(100);
+        */
     }
 }
 
