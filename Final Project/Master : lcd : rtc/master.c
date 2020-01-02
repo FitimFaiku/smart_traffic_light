@@ -20,6 +20,9 @@
 #define SS_UNSELECT PORT_VALUE |= (1 << SS);
 #define SS_SELECT PORT_VALUE &= ~(1 << SS);
 
+
+static uint8_t counterMenueEntry=0;
+
 void SPI_MasterInit(void) {
     // Set MOSI and SCK output, all others input
     PORT_DIRECTION |= (1 << MOSI) | (1 << SCK);
@@ -100,7 +103,8 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
             cnt_s=0;
         }
         cnt_ms_ten=0;
-        setTime(cnt_hour,cnt_min,cnt_s);
+        setTime(counterMenueEntry, cnt_hour,cnt_min,cnt_s);
+        counterMenueEntry++;
     }
     
 }

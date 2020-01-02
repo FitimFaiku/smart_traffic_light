@@ -12,7 +12,6 @@ Test the DOGM-Display over SPI.
 #include <stdbool.h> // Include bool
 #include <stdio.h> // For sprintf
 
-static uint8_t counterMenueEntry=0;
 
 void LCD_and_Spi_Init(){
     // Initialize the SPI interface for the LCD display
@@ -22,12 +21,11 @@ void LCD_and_Spi_Init(){
     lcdInit();
 }
 
-void setTime(uint8_t hour, uint8_t minutes, uint8_t seconds){
-	if(counterMenueEntry<=0){
+void setTime(uint8_t counter,uint8_t hour, uint8_t minutes, uint8_t seconds){
+	if(counter<=0){
 		lcdClear();
 		lcdSetCursor(-1,0);
 		lcdWriteString("Aktuelle Uhrzeit");
-		counterMenueEntry ++;
 	}
 	char timeline[9];
 	lcdSetCursor(0,1);
