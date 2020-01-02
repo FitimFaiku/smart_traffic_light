@@ -125,25 +125,25 @@ int main() {
     LCD_and_Spi_Init();
 
 
+    /**
     currentHour = get_Current_Hour();
 
     char bufferHour[3];
     itoa(currentHour,bufferHour,10);
     uart_transmit_string("Current Time: ");
     uart_transmit_string(bufferHour);
-
+    */
     TCCR0B = 3; // prescaler 64 -> 4us tick time, 250 ticks -- 1 ms
     TIMSK0 = 1 ; // enablen der overflow interrupts
     TCNT0 = 6; // counter auf 6 --> jede 256-6= 250 ticks --> 1 ms
     sei(); //enable interrupts(globally)
     
-    SS_SELECT
-    _delay_ms(100);
-    SPI_MasterTransmit('A');
-    SS_UNSELECT
-
 
     while (1) {
+        SS_SELECT
+        _delay_ms(100);
+        SPI_MasterTransmit('A');
+        SS_UNSELECT
        /* SS_SELECT
         _delay_ms(100);
         SPI_MasterTransmit('A');
