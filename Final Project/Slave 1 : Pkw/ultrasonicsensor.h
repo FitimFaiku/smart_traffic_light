@@ -83,4 +83,3 @@ int ultrasonicsensor()
 	uart_transmit('\r');
 	uart_transmit('\n');
 	return messung;
-}
