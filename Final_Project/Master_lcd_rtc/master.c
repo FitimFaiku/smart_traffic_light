@@ -111,8 +111,36 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
     
 }
 
-void check_Current_State_And_Update_If_Needed(void) {
+void check_current_state_and_update_if_needed(void) {
+    switch (current_status){
+        case '1' :
+        //Day Mode(will not be  send) -->  Init function set traffic Light green and Walker Red 
+        break;
+        case '2':
+        //Night Mode --> Send to slaves code 2 
+        SS_SELECT
+        _delay_ms(100);
+        SPI_MasterTransmit('2');
+        uart_transmit_string("2 Gesendet\n\r");
+        SS_UNSELECT
+        break;
+        //Switch to Red Traffic Light and Green Walkers Traffic Light
+        case '3':
+        break;
+        case '4':
+        //Switch to Green Traffic Light and Red Walkers Traffic Light
+        break;
+        case '5':
+        //Switch to Yellow <b>Cars</b> Traffic Light
+        break;
+        case '6':
+        //Someone is near the <b>Walkers</b> Trafic Light (Slave to Master communication)
+        break;
+        case '7':
+        //Someone is near the <b>Cars</b> Trafic Light (Slave to Master communication)
+        break;
 
+    }
 }
 
 int main() {
@@ -127,9 +155,22 @@ int main() {
     // INIT for the real time clock
     init_DS13xx();
 
+    uint8_t current_hour = get_Current_Hour();
+    // 21-6:00 Nachtmodus
+    if(current_hour>= 21 && current_hour<6){
+        //Night mode
+        uart_transmit_string("Nachtmodus");
+        current_status = '2';
+
+    } else {
+        // Day mode
+        uart_transmit_string("Tagesmodus");
+        current_status = '1';
+    }
+
     // Initialize the SPI interface for the LCD display
     // Initialize the LCD display
-    LCD_and_Spi_Init();
+    //LCD_and_Spi_Init();
 
 
     /**

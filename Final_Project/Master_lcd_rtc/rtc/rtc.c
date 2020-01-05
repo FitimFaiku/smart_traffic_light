@@ -210,11 +210,11 @@ void DS13xx_Write_CLK_Registers(void) { // initialize time & date from user entr
 	 DS13xx_Reset();
 }
 
-unsigned char get_Current_Hour(void){
+uint8_t get_current_hour(void){
 	DS13xx_WriteByte(0x85);	// for reading the hour
 	ClockHour = DS13xx_ReadByte();
 	ClockHour = (ClockHour & 0x0F) + ((ClockHour & 0x10)>>4)*10;
-	return ClockHour;
+	return ClockHour-48;
 }
 
 
