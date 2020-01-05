@@ -21,15 +21,13 @@ git push --> Aktuellen commit zu remote pushen. <br />
     2.1) The Slave Microcontroller sets an intervall for how long the light 
 
 ### Codes 
-1) Tagesmodus -->  Init function set traffic Light green and Walker Red 
+1) Tagesmodus(Wird nicht geschickt) -->  Init function set traffic Light green and Walker Red 
 2) Nachtmodus --> Send to slaves code 2 
-3) Switch to Red <b>Walker</b> Traffic Light
-4) Switch to Green <b>Walker</b> Traffic Light
-5) Switch to Red <b>Cars</b> Traffic Light
-6) Switch to Green <b>Cars</b> Traffic Light
-7) Switch to Yellow <b>Cars</b> Traffic Light
-8) Someone is near the <b>Walkers</b> Trafic Light (Slave to Master communication)
-9) Someone is near the <b>Cars</b> Trafic Light (Slave to Master communication)
+3) Switch to Red Traffic Light and Green Walkers Traffic Light
+4) Switch to Green <b>Walker</b> Traffic Light and Red Cars Traffic Light
+5) Switch to Yellow <b>Cars</b> Traffic Light
+6) Someone is near the <b>Walkers</b> Trafic Light (Slave to Master communication)
+7) Someone is near the <b>Cars</b> Trafic Light (Slave to Master communication)
 
 ## Sources 
 https://www.avrfreaks.net/forum/atmega32-interfacing-spi

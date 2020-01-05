@@ -1,0 +1,9 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+#make not in git
+*.elf
+*.hex
+*.o
+
+# misc
+.DS_Store

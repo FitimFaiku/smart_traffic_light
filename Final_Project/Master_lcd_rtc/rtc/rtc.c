@@ -70,11 +70,12 @@ void init_uart(uint32_t baudrate)
 	UCSR0B |=(1<<TXEN0) + (1<<RXEN0); //1<<7  // enable receive and transmit
 }
 */
-/*void uart_transmit(uint8_t c){
+void uart_transmitt(uint8_t c){
 		while ((UCSR0A & (1<<UDRE0)) == 0); //or 1<<5 // waits until UDR empty
 		UDR0 = c; // send character c
 }
-uint8_t uart_receive ()
+
+/*uint8_t uart_receive ()
 {
 	while (UCSR0A & (1<<RXC0) == 0); //waits until character received
 	return(UDR0); //returns received character from function
@@ -85,13 +86,14 @@ uint8_t uart_receive_nb (uint8_t * received)  // non-blocking receive !!
 	* received = UDR0;    // the received character will be read and saved in "received"
 	return(1);            // returns 1, when it recived a Character d
 }
-void uart_sendstring (char * str){
+* */
+void uart_sendstringg (char * str){
 	while (*str){
-	uart_transmit(*str);
+	uart_transmitt(*str);
 			str++;
 	}
 }
-*/
+
 
 // Setup the DS13xx hardware
 void DS13xx_Init(void) {
@@ -174,8 +176,8 @@ void DS13xx_Read_CLK_Registers(void) { // loop read & display clock registers
 		char buffer[3];
 		itoa(ClockSecond,buffer,10); //converting the int value of ClockSecond to decimal value (10),
 									 //which will be saved in an array of char (buffer)
-		//uart_sendstring(" Second:");
-		//uart_sendstring(buffer);
+		uart_sendstringg(" Second:");
+		uart_sendstringg(buffer);
 	
 	 	DS13xx_WriteByte(0x83);	// for reading the min
 	 	ClockMinute = DS13xx_ReadByte();
@@ -183,8 +185,8 @@ void DS13xx_Read_CLK_Registers(void) { // loop read & display clock registers
 		DS13xx_Reset();
 		char bufferMinute[3];
 		itoa(ClockMinute,bufferMinute,10);
-		//uart_sendstring(" Minute:");
-		//uart_sendstring(bufferMinute);
+		uart_sendstringg(" Minute:");
+		uart_sendstringg(bufferMinute);
 
 	 	DS13xx_WriteByte(0x85);	// for reading the hour
 	 	ClockHour = DS13xx_ReadByte();
@@ -192,9 +194,9 @@ void DS13xx_Read_CLK_Registers(void) { // loop read & display clock registers
 		DS13xx_Reset();
 		char bufferHour[3];
 		itoa(ClockHour,bufferHour,10);
-		//uart_sendstring(" Hour:");
-		//uart_sendstring(bufferHour);
-		//uart_sendstring("\r\n");
+		uart_sendstringg(" Hour:");
+		uart_sendstringg(bufferHour);
+		uart_sendstringg("\r\n");
 }
 
 void DS13xx_Write_CLK_Registers(void) { // initialize time & date from user entries

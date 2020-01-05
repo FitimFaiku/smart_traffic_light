@@ -106,6 +106,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
         setTime(menueopencounter, cnt_hour,cnt_min,cnt_s);
         menueopencounter++;
         uart_transmit_string("I bims der Master huier \n\r");
+        DS13xx_Read_CLK_Registers();
     }
     
 }
@@ -120,8 +121,8 @@ int main() {
     uart_transmit_string("I bims der Master\n\r");
     //unsigned char currentHour;
 
-    DDRB |= SS;
-    SPI_MasterInit();
+    //DDRB |= SS;
+    //SPI_MasterInit();
 
     // INIT for the real time clock
     init_DS13xx();
