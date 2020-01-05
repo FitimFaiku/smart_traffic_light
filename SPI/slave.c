@@ -1,3 +1,4 @@
+#define F_CPU 16000000
 #include<avr/io.h>
 #include<util/delay.h>
 #include <avr/interrupt.h>
@@ -29,10 +30,12 @@ char uart_receive() {
     return (char) UDR0;
 }
 
-void uart_transmit_string(char *string) {
-    for (int i = 0; strcmp(string[i], '\0') != 0; i++) {
-        uart_transmit(string[i]);
-    }
+void uart_sendstring (char * str)
+{
+	while(*str){
+	 uart_transmit(*str);
+	 str++;
+	}
 }
 
 char SPI_SlaveReceive(void) {
@@ -63,15 +66,16 @@ void uart_init(uint32_t baudrate) {
 
 int main() {
     uart_init(115200);
-    uart_transmit_string("I bims der Slave\n\r");
+    uart_sendstring("I bims der Slave\n\r");
 
     SPI_SlaveInit();
 
     while (1) {
-        SPI_SlaveInit();
+		SPI_SlaveInit();
         char c = SPI_SlaveReceive();
+        uart_sendstring("received:");
         uart_transmit(c);
-        uart_transmit_string("\n\r");
+        uart_sendstring("\n\r");
     }
 }
 

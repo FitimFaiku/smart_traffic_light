@@ -17,7 +17,7 @@
 #include <util/delay.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include "light_ws2812.h"
+#include "../Light_WS2812/light_ws2812.h"
 
 
 /*#define Rot  0xff
@@ -102,27 +102,4 @@ void BlinkYellowTL(){
 		_delay_ms(1000);
 }
 
-int main(void)
-{
 
-	while(1)
-	{
-
-		int a=2;// a is a command, which the slave will receive from the master
-		if(a==3){// Switch to rot
-			SwitchRedTL();
-		}
-		if(a==4){// Switch to green
-			SwitchGreenTL();
-		}
-		if(a==5){ // Switch to yellow
-			SwitchYellowTL();
-		}
-		if(a==2){ // night mode = blink yellow
-			BlinkYellowTL();
-			
-		}
-  
-	}
-}
-	

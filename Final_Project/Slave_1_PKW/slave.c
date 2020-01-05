@@ -22,12 +22,12 @@ void SPI_SlaveInit(void) {
     SPCR |= (1 << SPE);
 }
 
-void uart_transmit(char character) {
+void uart_transmit_slave(char character) {
     while (!(UCSR0A & (1 << 5)));
     UDR0 = (uint8_t) character;
 }
 
-char uart_receive() {
+char uart_receive_slave() {
     while (!(UCSR0A & (1 << RXC0)));
     return (char) UDR0;
 }
@@ -71,9 +71,11 @@ int main() {
     SPI_SlaveInit();
 
     while (1) {
-        SPI_SlaveInit();
+		SPI_SlaveInit();
         char c = SPI_SlaveReceive();
-        uart_transmit(c);
+        uart_transmit_slave(c);
+        uart_sendstring("reveived");
+        uart_transmit_slave(c);
         uart_transmit_string("\n\r");
         if(c=='3'){// Switch to rot
             SwitchRedTL();

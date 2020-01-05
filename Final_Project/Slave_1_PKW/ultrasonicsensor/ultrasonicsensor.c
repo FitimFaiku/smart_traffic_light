@@ -26,7 +26,7 @@ void uart_transmit (uint8_t c)
 	UDR0 = c;//send character c
 }
 
-uart_receive ()
+char uart_receive ()
 {
 	while ( (UCSR0A & (1 << RXC0)) == 0)  ;    //  warten, bis bit bit RXC0 in UCSR0A 1 wird -> received something !
 	return(UDR0);							   // auslesen und zurückgeben !
@@ -76,7 +76,7 @@ ISR(TIMER0_OVF_vect) //timer 0 overflow interrupt service routine
 
 
 
-int main(void)
+/*int main(void)
 {
 	init_uart(115200);
 	DDRD = (1<<5); //PD5 (output)
@@ -89,7 +89,7 @@ int main(void)
 	TIMSK0=1; 	// enable timer 0 overflow interrupts
 	sei();    	//	enable interrupts (globally)
 	while(1)
-	{
+	{*/
 		/*//Mesung ausloesen durch 10µs High time auf dem Trigger-Pin
 		PORTD&=~(1<<5);	
 		_delay_us(2);
@@ -103,7 +103,7 @@ int main(void)
 			messung++;
 			_delay_us(1); 
 		}*/
-		messung=messung/48; // /48 um die gemessene Zeit in cm umzurechnen
+		/*messung=messung/48; // /48 um die gemessene Zeit in cm umzurechnen
 		inttostr(messung,entfernung);
 		uart_sendstring(entfernung); 
 		uart_transmit('\r');
@@ -111,3 +111,4 @@ int main(void)
 		messung=0;
 	}
 }
+*/
