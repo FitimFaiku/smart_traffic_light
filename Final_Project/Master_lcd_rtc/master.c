@@ -103,7 +103,8 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
             cnt_s=0;
         }
         cnt_ms_ten=0;
-        setTime(menueopencounter, cnt_hour,cnt_min,cnt_s);
+        check_current_state_and_update_if_needed();
+        //setTime(menueopencounter, cnt_hour,cnt_min,cnt_s);
         menueopencounter++;
         uart_transmit_string("I bims der Master huier \n\r");
         DS13xx_Read_CLK_Registers();
@@ -114,6 +115,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
 void check_current_state_and_update_if_needed(void) {
     switch (current_status){
         case '1' :
+        uart_transmit_string("Current Status is 1 \n\r");
         //Day Mode(will not be  send) -->  Init function set traffic Light green and Walker Red 
         break;
         case '2':
@@ -155,9 +157,9 @@ int main() {
     // INIT for the real time clock
     init_DS13xx();
 
-    uint8_t current_hour = get_Current_Hour();
+    uint8_t current_hour = get_current_hour();
     // 21-6:00 Nachtmodus
-    if(current_hour>= 21 && current_hour<6){
+    if(current_hour>= 21){
         //Night mode
         uart_transmit_string("Nachtmodus");
         current_status = '2';
