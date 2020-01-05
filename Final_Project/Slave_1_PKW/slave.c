@@ -1,3 +1,6 @@
+#include "traffic_light/Light_WS2812/light_ws2812.h"
+#include "ultrasonicsensor/ultrasonicsensor.h"
+
 #include<avr/io.h>
 #include<util/delay.h>
 #include <avr/interrupt.h>
@@ -72,6 +75,19 @@ int main() {
         char c = SPI_SlaveReceive();
         uart_transmit(c);
         uart_transmit_string("\n\r");
+        if(c=='3'){// Switch to rot
+            SwitchRedTL();
+        }
+        if(c=='4'){// Switch to green
+            SwitchGreenTL();
+        }
+        if(c=='5'){ // Switch to yellow
+            SwitchYellowTL();
+        }
+        if(c=='2'){ // night mode = blink yellow
+            BlinkYellowTL();
+
+        }
     }
 }
 
