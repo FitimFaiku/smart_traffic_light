@@ -31,6 +31,8 @@
 #include <avr/interrupt.h>
 #include <stdlib.h>
 #include <string.h> //for itoa function
+#include <stdio.h> // For sprintf
+#include <stdint.h> 
 
 
 void DS13xx_Init(void);
@@ -211,10 +213,17 @@ void DS13xx_Write_CLK_Registers(void) { // initialize time & date from user entr
 }
 
 uint8_t get_current_hour(void){
+	unsigned char clock_hour = 0b00010011;
 	DS13xx_WriteByte(0x85);	// for reading the hour
-	ClockHour = DS13xx_ReadByte();
-	ClockHour = (ClockHour & 0x0F) + ((ClockHour & 0x10)>>4)*10;
-	return ClockHour-48;
+	clock_hour = DS13xx_ReadByte();
+	clock_hour = (clock_hour & 0x0F) + ((clock_hour & 0x10)>>4)*10;
+	char bufferHour[3];
+	itoa(clock_hour,bufferHour,10);
+	return unsined_char_to_int(bufferHour);
+}
+
+uint8_t unsined_char_to_int(char* data){
+	return atoi(data);
 }
 
 

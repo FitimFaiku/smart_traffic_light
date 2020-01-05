@@ -20,8 +20,8 @@
 #define SS_UNSELECT PORT_VALUE |= (1 << SS);
 #define SS_SELECT PORT_VALUE &= ~(1 << SS);
 
-
-
+void check_current_state_and_update_if_needed(void);
+static char current_status = '0';
 
 void SPI_MasterInit(void) {
     // Set MOSI and SCK output, all others input
@@ -114,17 +114,24 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
 
 void check_current_state_and_update_if_needed(void) {
     switch (current_status){
+		static uint8_t counter_send_night_mode_status = 0;
+		case '0':
+		uart_transmit_string("Current Status is 0 \n\r");
+		break;
         case '1' :
         uart_transmit_string("Current Status is 1 \n\r");
         //Day Mode(will not be  send) -->  Init function set traffic Light green and Walker Red 
         break;
         case '2':
-        //Night Mode --> Send to slaves code 2 
-        SS_SELECT
-        _delay_ms(100);
-        SPI_MasterTransmit('2');
-        uart_transmit_string("2 Gesendet\n\r");
-        SS_UNSELECT
+		uart_transmit_string("2 senden\n\r");
+		//Night Mode --> Send to slaves code 2 
+		SS_SELECT
+		_delay_ms(100);
+		SPI_MasterTransmit('2');
+		uart_transmit_string("2 Gesendet\n\r");
+		SS_UNSELECT
+		current_status='0';
+		
         break;
         //Switch to Red Traffic Light and Green Walkers Traffic Light
         case '3':
@@ -141,6 +148,11 @@ void check_current_state_and_update_if_needed(void) {
         case '7':
         //Someone is near the <b>Cars</b> Trafic Light (Slave to Master communication)
         break;
+        default:
+        uart_transmit_string("default");
+        uart_transmit(current_status);
+        break;
+        
 
     }
 }
@@ -151,24 +163,11 @@ int main() {
     uart_transmit_string("I bims der Master\n\r");
     //unsigned char currentHour;
 
-    //DDRB |= SS;
-    //SPI_MasterInit();
+    DDRB |= SS;
+    SPI_MasterInit();
 
     // INIT for the real time clock
     init_DS13xx();
-
-    uint8_t current_hour = get_current_hour();
-    // 21-6:00 Nachtmodus
-    if(current_hour>= 21){
-        //Night mode
-        uart_transmit_string("Nachtmodus");
-        current_status = '2';
-
-    } else {
-        // Day mode
-        uart_transmit_string("Tagesmodus");
-        current_status = '1';
-    }
 
     // Initialize the SPI interface for the LCD display
     // Initialize the LCD display
@@ -187,6 +186,21 @@ int main() {
     TIMSK0 = 1 ; // enablen der overflow interrupts
     TCNT0 = 6; // counter auf 6 --> jede 256-6= 250 ticks --> 1 ms
     sei(); //enable interrupts(globally)
+    
+    uint8_t current_hour = get_current_hour();
+		// 21-6:00 Nachtmodus
+	if(current_hour<=21){
+		//Night mode
+		uart_transmit_string("Nachtmodus");
+		//uart_transmit(current_hour+48);
+		current_status = '2';
+		uart_transmit_string("Nachtmodus, status: ");
+		uart_transmit(current_status);
+	} else {
+		// Day mode
+		uart_transmit_string("Tagesmodus");
+		current_status = '1';
+	}
     
 
     while (1) {
