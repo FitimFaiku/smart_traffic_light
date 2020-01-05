@@ -1,3 +1,4 @@
+#define F_CPU 16000000
 #include <string.h>
 #include <avr/io.h>
 #include <util/delay.h>
@@ -38,9 +39,10 @@ void uart_transmit(char character) {
 }
 
 void uart_transmit_string(char *string) {
-    for (int i = 0; strcmp(string[i], '\0') != 0; i++) {
-        uart_transmit(string[i]);
-    }
+    while (*string){
+        uart_transmit(*string);
+            string++;
+        }
 }
 
 char uart_receive() {
@@ -83,19 +85,20 @@ int main() {
     SPI_MasterInit();
 
     while (1) {
-        SS_SELECT
+		//SPI_MasterInit();
+        SS_SELECT;
         _delay_ms(100);
         SPI_MasterTransmit('A');
-        SS_UNSELECT
+        SS_UNSELECT;
         uart_transmit_string("255 Gesendet\n\r");
         _delay_ms(100);
 
 
-        SS_SELECT
+        SS_SELECT;
         _delay_ms(100);
         SPI_MasterTransmit('Z');
+        SS_UNSELECT;
         uart_transmit_string("0 Gesendet\n\r");
-        SS_UNSELECT
         _delay_ms(100);
     }
 }

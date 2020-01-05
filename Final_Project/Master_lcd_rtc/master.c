@@ -116,6 +116,14 @@ void check_current_state_and_update_if_needed(void) {
     switch (current_status){
 		static uint8_t counter_send_night_mode_status = 0;
 		case '0':
+		if(counter_send_night_mode_status++>=5){
+			SS_SELECT
+			_delay_ms(100);
+			SPI_MasterTransmit('A');
+			uart_transmit_string("2 gesendet");
+			SS_UNSELECT
+			counter_send_night_mode_status=0;
+		}
 		uart_transmit_string("Current Status is 0 \n\r");
 		break;
         case '1' :
@@ -127,7 +135,7 @@ void check_current_state_and_update_if_needed(void) {
 		//Night Mode --> Send to slaves code 2 
 		SS_SELECT
 		_delay_ms(100);
-		SPI_MasterTransmit('2');
+		SPI_MasterTransmit('B');
 		uart_transmit_string("2 Gesendet\n\r");
 		SS_UNSELECT
 		current_status='0';
@@ -204,10 +212,7 @@ int main() {
     
 
     while (1) {
-        /*SS_SELECT
-        _delay_ms(100);
-        SPI_MasterTransmit('A');
-        SS_UNSELECT
+        
        /* SS_SELECT
         _delay_ms(100);
         SPI_MasterTransmit('A');
