@@ -13,11 +13,11 @@
 *
 *
 */
-
+#define F_CPU 16000000 
 #include <util/delay.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include "../Light_WS2812/light_ws2812.h"
+#include "light_ws2812.h"
 
 
 /*#define Rot  0xff

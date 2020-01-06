@@ -1,6 +1,6 @@
-#include "traffic_light/Light_WS2812/light_ws2812.h"
+#include "traffic_light/light_ws2812.h"
 #include "ultrasonicsensor/ultrasonicsensor.h"
-
+#define F_CPU 16000000 
 #include<avr/io.h>
 #include<util/delay.h>
 #include <avr/interrupt.h>
@@ -38,7 +38,17 @@ void uart_transmit_string(char *string) {
     }
 }
 
-char SPI_SlaveReceive(void) {
+/*char SPI_SlaveReceive(char toMaster) { //was (void)
+	SPDR = toMaster;
+    // Wait for reception complete
+    // SPI Status Reg & 1<<SPI Interrupt Flag
+    while (!(SPSR & (1 << SPIF)));
+    // Return data register
+    return SPDR;
+}*/
+
+char SPI_SlaveReceive(char toMaster) {
+	SPDR = toMaster;
     // Wait for reception complete
     // SPI Status Reg & 1<<SPI Interrupt Flag
     while (!(SPSR & (1 << SPIF)));
@@ -69,14 +79,15 @@ int main() {
     uart_transmit_string("I bims der Slave\n\r");
 
     SPI_SlaveInit();
-
+	char c = 'X';
+	SwitchGreenTL();
     while (1) {
-		SPI_SlaveInit();
-        char c = SPI_SlaveReceive();
-        uart_transmit_slave(c);
+		
+        c = SPI_SlaveReceive(c);
         uart_sendstring("reveived");
         uart_transmit_slave(c);
         uart_transmit_string("\n\r");
+        //logik for traffic lights - the intepretation of the cmds of the master
         if(c=='3'){// Switch to rot
             SwitchRedTL();
         }
