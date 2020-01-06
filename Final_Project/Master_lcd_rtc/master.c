@@ -128,7 +128,7 @@ void check_current_state_and_update_if_needed(void) {
 			datafromslave = SPI_MasterTransmit('A');
             uart_transmit_string("2 gesendet \n \r");
             uart_transmit_string("Und bekommen");
-            uart_transmit(datafromslave+48)
+            uart_transmit(datafromslave+48);
             uart_transmit_string("\n \r");
 			SS_UNSELECT
 			counter_send_night_mode_status=0;
@@ -178,7 +178,7 @@ void check_current_state_and_update_if_needed(void) {
 void check_current_hour_and_update_current_state(){
     uint8_t current_hour = get_current_hour();
     // 21-6:00 Nachtmodus TODO right times here
-    if(current_hour<=21){ 
+    if(current_hour>=21){ 
         //Night mode
         uart_transmit_string("Nachtmodus");
         //uart_transmit(current_hour+48);
