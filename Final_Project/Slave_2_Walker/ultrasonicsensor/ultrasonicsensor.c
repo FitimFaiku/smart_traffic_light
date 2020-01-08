@@ -57,26 +57,9 @@ void inttostr(uint16_t val,char * resultstring) // val : call by value  resultst
 	resultstring[4]=0; // zero terminated string
 }
 
-ISR(TIMER0_OVF_vect) //timer 0 overflow interrupt service routine
-{
-	static uint16_t count1=0,count2=0; //static: global lifetime, local visibility		
-	TCNT0 =231;				//25 ticks bis zum overflow
-	if(count1==2)PORTD&=~(1<<5);
-	if(count1==13)PORTD|=(1<<5);
-	if(count1==33)PORTD&=~(1<<5);
-		
-	//if(count1>=55){
-		//if((PIND&(1<<6))!=0){
-		//messung++;
-		//}
-		if(count1>=130000)count1=0;
-	//}	
-	count1++;
-}
 
 
-
-int main(void)
+int ultrasonicsensor(void)
 {
 	init_uart(115200);
 	DDRD = (1<<5); //PD5 (output)
@@ -90,7 +73,7 @@ int main(void)
 	sei();    	//	enable interrupts (globally)
 	while(1)
 	{
-		/*//Mesung ausloesen durch 10µs High time auf dem Trigger-Pin
+		//Mesung ausloesen durch 10µs High time auf dem Trigger-Pin
 		PORTD&=~(1<<5);	
 		_delay_us(2);
 		PORTD|=(1<<5);
@@ -102,7 +85,7 @@ int main(void)
 		while((PIND&(1<<6))!=0){
 			messung++;
 			_delay_us(1); 
-		}*/
+		}
 		messung=messung/48; // /48 um die gemessene Zeit in cm umzurechnen
 		inttostr(messung,entfernung);
 		uart_sendstring(entfernung); 

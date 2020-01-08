@@ -1,7 +1,10 @@
+#include "traffic_light/light_ws2812.h"
+#define F_CPU 16000000 
 #include<avr/io.h>
 #include<util/delay.h>
 #include <avr/interrupt.h>
 #include <string.h>
+
 
 #define PORT_DIRECTION DDRB
 #define PORT_VALUE PORTB
@@ -19,12 +22,12 @@ void SPI_SlaveInit(void) {
     SPCR |= (1 << SPE);
 }
 
-void uart_transmit(char character) {
+void uart_transmit_slave(char character) {
     while (!(UCSR0A & (1 << 5)));
     UDR0 = (uint8_t) character;
 }
 
-char uart_receive() {
+char uart_receive_slave() {
     while (!(UCSR0A & (1 << RXC0)));
     return (char) UDR0;
 }
@@ -35,7 +38,17 @@ void uart_transmit_string(char *string) {
     }
 }
 
-char SPI_SlaveReceive(void) {
+/*char SPI_SlaveReceive(char toMaster) { //was (void)
+	SPDR = toMaster;
+    // Wait for reception complete
+    // SPI Status Reg & 1<<SPI Interrupt Flag
+    while (!(SPSR & (1 << SPIF)));
+    // Return data register
+    return SPDR;
+}*/
+
+char SPI_SlaveReceive(char toMaster) {
+	SPDR = toMaster;
     // Wait for reception complete
     // SPI Status Reg & 1<<SPI Interrupt Flag
     while (!(SPSR & (1 << SPIF)));
@@ -66,12 +79,26 @@ int main() {
     uart_transmit_string("I bims der Slave\n\r");
 
     SPI_SlaveInit();
-
+	char c = 'X';
+	SwitchRedPL();
     while (1) {
-        SPI_SlaveInit();
-        char c = SPI_SlaveReceive();
-        uart_transmit(c);
+		
+        c = SPI_SlaveReceive(c);
+        uart_sendstring("reveived");
+        uart_transmit_slave(c);
         uart_transmit_string("\n\r");
+        //logik for traffic lights - the intepretation of the cmds of the master
+        if(c=='3'){// Switch to green pedestrian traffic light
+            SwitchGreenPL();
+			//ultrasonicsensor();
+        }
+        if(c=='4'){// Switch to red pedestrian traffic light
+            SwitchRedPL();
+        }
+        
+        if(c=='2'){ // night mode = blink yellow pkw traffic light
+			NoLights();
+        }
     }
 }
 
