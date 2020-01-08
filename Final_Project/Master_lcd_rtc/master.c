@@ -22,8 +22,35 @@
 #define SS_UNSELECT PORT_VALUE |= (1 << SS);
 #define SS_SELECT PORT_VALUE &= ~(1 << SS);
 
-void check_current_state_and_update_if_needed(void);
+
 static char current_state = '0';
+static volatile uint8_t current_hour;
+static volatile uint8_t current_minute;
+static volatile char last_state; 
+static volatile bool should_action = false;
+static volatile bool is_day_mode;
+static volatile uint8_t counter_to_do_action_seconds;
+
+void init();
+void uart_init(uint32_t baudrate);
+void uart_transmit(char character);
+void uart_transmit_string();
+char uart_receive(void);
+void SPI_MasterInit(void);
+//void init_DS13xx() RTC from rtc.h
+//void LCD_and_Spi_Init() from dogm_lcd.h
+void check_current_hour_and_initialize_volatile_variables();
+//uint8_t get_current_hour() from rtc.h
+//uint8_t get_current_minute() from rtc.h
+
+void init_interrupts();
+void check_should_action();
+
+void do_action();
+void check_current_state_and_do_action_if_needed();
+
+
+
 
 void SPI_MasterInit(void) {
     // Set MOSI and SCK output, all others input
@@ -85,77 +112,106 @@ void uart_init(uint32_t baudrate) {
 
 ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
 	// TODO get those values from the master module and set them initialy and afterwards display them!!!
-    static uint8_t menueopencounter=0, cnt_ms=0,cnt_ms_ten=0, cnt_s=0, cnt_min=26, cnt_hour=11; // gloabl lifetime, local visibillity Counter for miliseconds
+    static uint8_t menueopencounter=0, cnt_ms=0,cnt_ms_ten=0, cnt_s=0, cnt_min=26; // gloabl lifetime, local visibillity Counter for miliseconds
     TCNT0 = 6; // counter auf 6 --> jede 256-6= 250 ticks --> 1 ms
+
     if(cnt_ms++>=100){
 		cnt_ms_ten++;
 		cnt_ms=0;
 	} 
     if(cnt_ms_ten>=10){
         cnt_s++;
+        counter_to_do_action_seconds++;
+        // Every second we check if maybe someone is near the Red Traffic Light slave -> master command 6 or 7 
+        check_should_action();
         if(cnt_s>=60){
             cnt_min++;
             if(cnt_min>=60){
-                cnt_hour++;
-                if(cnt_hour>=24){
-                    cnt_hour=0;
+                current_hour++;
+                if(current_hour>=24){
+                    current_hour=0;
                 }
                 cnt_min=0;
             }
             cnt_s=0;
+            menueopencounter++;
+            check_current_state_and_update_if_needed();
+            uart_transmit_string("Updating ...\n\r");
+            //setTime(menueopencounter, current_hour,cnt_min,cnt_s);
         }
         cnt_ms_ten=0;
-        check_current_state_and_update_if_needed();
-        //setTime(menueopencounter, cnt_hour,cnt_min,cnt_s);
-        menueopencounter++;
-        uart_transmit_string("I bims der Master huier \n\r");
-        DS13xx_Read_CLK_Registers();
+        //DS13xx_Read_CLK_Registers();
     }
     
 }
 
-void check_current_state_and_update_if_needed(void) {
+void check_should_action(){
+
+    char slave_message = '0';
+    // When walker is waiting and currently has red TODO
+    if(datafromslave  == '6' && last_state == '4') {
+        current_state = '3'; // Switch Yellow Car -(?msTODO)-> Switch Red Car -(?msTODO)->Switch green for Walkers Traffic Light
+    }
+
+    // When car is waiting and currently has red TODO 
+    if(datafromslave == '7' && TODO){
+        // Switch Red Walkers -(?msTODO)->  Switch Yellow Car -(?msTODO)-> Switch Green Car
+
+    }
+}
+
+void do_action(void) {
     //TODO check if slave gives some message here and react on that.
-    char slave_message = '3';
+    
+    static uint8_t counter_seconds = 0;
+    counter_seconds++;
     switch (current_state){
+        static char last_state = '0';
+        case '0'
+        // Init and listening state.
         static uint8_t counter_send_night_mode_status = 0;
         static uint8_t datafromslave = 0;
-        static char last_state = '0';
-		case '0':
-		if(counter_send_night_mode_status++>=5){
-			SS_SELECT
-			_delay_ms(100);
-			datafromslave = SPI_MasterTransmit('A');
-            uart_transmit_string("2 gesendet \n \r");
-            uart_transmit_string("Und bekommen");
-            uart_transmit(datafromslave+48);
-            uart_transmit_string("\n \r");
-			SS_UNSELECT
-			counter_send_night_mode_status=0;
-		}
+        
+        // Only if datafromslave is Someone is near the <b>Walkers</b> Trafic Light (Slave to Master communication) and this Light is currently red
+        
+        counter_send_night_mode_status=0;
 		uart_transmit_string("Current Status is 0 \n\r");
 		break;
         case '1' :
         uart_transmit_string("Current Status is 1 \n\r");
-        //Day Mode(will not be  send) -->  Init function set traffic Light green and Walker Red 
+        //Day Mode(will not be  send) -->  Init function set traffic Light green and Walker Red
+
+        set_traffic_light_green();
+        SS_SELECT
+        _delay_ms(100);
+        SPI_MasterTransmit('2');
+        uart_transmit_string("2 Gesendet\n\r");
+        SS_UNSELECT
+
+
+
         break;
         case '2':
-        if(current_state != last_state){
-            uart_transmit_string("2 senden\n\r");
-            //Night Mode --> Send to slaves code 2 
-            SS_SELECT
-            _delay_ms(100);
-            SPI_MasterTransmit('2');
-            uart_transmit_string("2 Gesendet\n\r");
-            last_state = '2';
-            SS_UNSELECT
-        }
+        last_state='2';
+        uart_transmit_string("2 senden\n\r");
+        //Night Mode --> Send to slaves code 2 
+        SS_SELECT
+        _delay_ms(100);
+        SPI_MasterTransmit('2');
+        uart_transmit_string("2 Gesendet\n\r");
+        SS_UNSELECT
+
+        current_state='0';
         break;
-        //Switch to Red Traffic Light and Green Walkers Traffic Light
+        
         case '3':
+        last_state='3';
+        //Switch to Red Traffic Light and Green Walkers Traffic Light
+
         break;
         case '4':
-        //Switch to Green Traffic Light and Red Walkers Traffic Light
+        last_state='4';
+        //Switch to Green Cars Traffic Light and Red Walkers Traffic Light
         break;
         case '5':
         //Switch to Yellow <b>Cars</b> Traffic Light
@@ -175,8 +231,13 @@ void check_current_state_and_update_if_needed(void) {
     }
 }
 
-void check_current_hour_and_update_current_state(){
-    uint8_t current_hour = get_current_hour();
+
+/**
+* Gets current hour from RTC - DS13xx and initializes cnr_h and current_status
+*/
+void check_current_hour_and_initialize_volatile_variables(){
+    current_hour = get_current_hour();
+    current_minute = get_current_minute(); // TODO this methode impl.
     // 21-6:00 Nachtmodus TODO right times here
     if(current_hour>=21){ 
         //Night mode
@@ -185,18 +246,21 @@ void check_current_hour_and_update_current_state(){
         current_state = '2';
         uart_transmit_string("Nachtmodus, status: ");
         uart_transmit(current_state);
+        is_day_mode = false;
     } else {
+        should_action = true;
         // Day mode
         uart_transmit_string("Tagesmodus");
         current_state = '1';
+        is_day_mode = true;
     }
 }
 
-int main() {
-	
+void init(){
+
+    // Init uart with baudrate
     uart_init(115200);
     uart_transmit_string("I bims der Master\n\r");
-    //unsigned char currentHour;
 
     DDRB |= SS;
     SPI_MasterInit();
@@ -205,21 +269,44 @@ int main() {
 
     // Initialize the SPI interface for the LCD display
     // Initialize the LCD display
-    //LCD_and_Spi_Init();
+    LCD_and_Spi_Init();
     
-    check_current_hour_and_update_current_state();
+    //initialize volatile variables such as 
+    check_current_hour_and_initialize_volatile_variables();
+    
+    // Initialize Interrupts 250 - ticks - 1ms 
+    init_interrupts();
 
-    //Enable interrupts
-    TCCR0B = 3; // prescaler 64 -> 4us tick time, 250 ticks -- 1 ms
-    TIMSK0 = 1 ; // enablen der overflow interrupts
-    TCNT0 = 6; // counter auf 6 --> jede 256-6= 250 ticks --> 1 ms
-    sei(); //enable interrupts(globally)
-    
+}
+
+void init_interrupts(){
+     //Enable interrupts
+     TCCR0B = 3; // prescaler 64 -> 4us tick time, 250 ticks -- 1 ms
+     TIMSK0 = 1 ; // enablen der overflow interrupts
+     TCNT0 = 6; // counter auf 6 --> jede 256-6=50 ticks --> 1 ms
+     sei(); //enable interrupts(globally)
+}
+
+void check_current_state_and_do_action_if_needed(){
+    if(counter_to_do_action_seconds >=30 && !should_action){
+        // Reverse from One Green - To Other TODO
+        should_action = true;
+        counter_to_do_action_seconds = 0;
+    }
+    if(should_action){
+        do_action();
+    }
+}
+
+int main() {
+    // Init of uart, SS-SPI, SPI_MasterInit, init_DS13xx, LCD_and_SPI_Init, init_volatile_variables,init_interrupts
+    init();
     //Sleep mode setzen(configurieren)
     set_sleep_mode(SLEEP_MODE_IDLE);
     
     while(1){
         sleep_mode(); //save power
+        check_current_state_and_update_if_need_for_action();
     }
 }
 

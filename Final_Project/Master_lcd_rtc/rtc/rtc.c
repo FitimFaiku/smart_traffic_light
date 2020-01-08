@@ -217,9 +217,21 @@ uint8_t get_current_hour(void){
 	DS13xx_WriteByte(0x85);	// for reading the hour
 	clock_hour = DS13xx_ReadByte();
 	clock_hour = (clock_hour & 0x0F) + ((clock_hour & 0x10)>>4)*10;
-	char bufferHour[3];
-	itoa(clock_hour,bufferHour,10);
-	return unsined_char_to_int(bufferHour);
+	DS13xx_Reset();
+	char buffer_hour[3];
+	itoa(clock_hour,buffer_hour,10);
+	return unsined_char_to_int(buffer_hour);
+}
+
+uint8_t get_current_minute(void){
+	unsigned char clock_minute = 0b00010011;
+	DS13xx_WriteByte(0x85);	// for reading the hour
+	clock_minute = DS13xx_ReadByte();
+	clock_minute = (clock_minute & 0x0F) + ((clock_minute & 0x70)>>4)*10;
+	DS13xx_Reset();
+	char buffer_minute[3];
+	itoa(clock_minute,buffer_minute,10);
+	return unsined_char_to_int(buffer_minute);
 }
 
 uint8_t unsined_char_to_int(char* data){
