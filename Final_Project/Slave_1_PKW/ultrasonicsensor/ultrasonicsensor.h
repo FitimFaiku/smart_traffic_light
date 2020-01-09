@@ -13,3 +13,5 @@ uint8_t uart_receive_nb (uint8_t * received);  // non-blocking receive !!
 void uart_sendstring (char * str);
 
 void inttostr(uint16_t val,char * resultstring); // val : call by value  resultstring: call by reference
+
+int ultrasonicsensor(void);

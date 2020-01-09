@@ -76,7 +76,7 @@ ISR(TIMER0_OVF_vect) //timer 0 overflow interrupt service routine
 
 
 
-/*int main(void)
+int ultrasonicsensor(void)
 {
 	init_uart(115200);
 	DDRD = (1<<5); //PD5 (output)
@@ -90,7 +90,7 @@ ISR(TIMER0_OVF_vect) //timer 0 overflow interrupt service routine
 	sei();    	//	enable interrupts (globally)
 	while(1)
 	{*/
-		/*//Mesung ausloesen durch 10µs High time auf dem Trigger-Pin
+		//Mesung ausloesen durch 10µs High time auf dem Trigger-Pin
 		PORTD&=~(1<<5);	
 		_delay_us(2);
 		PORTD|=(1<<5);
@@ -103,12 +103,14 @@ ISR(TIMER0_OVF_vect) //timer 0 overflow interrupt service routine
 			messung++;
 			_delay_us(1); 
 		}*/
-		/*messung=messung/48; // /48 um die gemessene Zeit in cm umzurechnen
+		messung=messung/48; // /48 um die gemessene Zeit in cm umzurechnen
 		inttostr(messung,entfernung);
 		uart_sendstring(entfernung); 
 		uart_transmit('\r');
 		uart_transmit('\n');
+		return messung;
 		messung=0;
+		
 	}
 }
 */

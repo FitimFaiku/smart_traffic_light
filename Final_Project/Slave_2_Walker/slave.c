@@ -2,6 +2,7 @@
 #define F_CPU 16000000 
 #include<avr/io.h>
 #include<util/delay.h>
+#include "ultrasonicsensor/ultrasonicsensor.h"
 #include <avr/interrupt.h>
 #include <string.h>
 
@@ -90,8 +91,8 @@ int main() {
         //logik for traffic lights - the intepretation of the cmds of the master
         if(c=='3'){// Switch to green pedestrian traffic light
             SwitchGreenPL();
-			//ultrasonicsensor();
-        }
+			ultrasonicsensor();
+        } 
         if(c=='4'){// Switch to red pedestrian traffic light
             SwitchRedPL();
         }

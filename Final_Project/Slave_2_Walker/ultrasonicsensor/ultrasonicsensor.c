@@ -91,6 +91,7 @@ int ultrasonicsensor(void)
 		uart_sendstring(entfernung); 
 		uart_transmit('\r');
 		uart_transmit('\n');
+		return messung;
 		messung=0;
 	}
 }
