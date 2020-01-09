@@ -48,8 +48,8 @@ ISR(TIMER0_OVF_vect) //timer 0 overflow interrupt service routine
 	static uint16_t count1=0,count2=0; //static: global lifetime, local visibility		
 	TCNT0 =231;				//25 ticks bis zum overflow
 	if(count2<=1000){
-		if(frequenz>count1) PORTD |= (1<<5); //Pin high setzen
-		else PORTD &= ~(1<<5); 				//Pin low setzen
+		if(frequenz>count1) PORTD |= (1<<4); //Pin high setzen
+		else PORTD &= ~(1<<4); 				//Pin low setzen
 		count1++;
 		if(count1==10) count1=0;	// counter zurücksetzten
 	}
@@ -64,7 +64,7 @@ int main()
 	uint8_t check=0;
 	init_uart(115200);
 	uart_sendstring("Gib eine Zahl von 0-9 ein um die Helligkeit einzustellen\r\n");
-	DDRD = (1<<5);
+	DDRD = (1<<4);
 	
 	TCCR0B =3; 	//b prescaler 64 -> 4µs tick time, 250 ticks == 1ms
 	TCNT0= 231; 	//25 ticks bis zum overflow

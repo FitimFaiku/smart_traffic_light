@@ -15,6 +15,8 @@
 #define MISO 4
 #define MOSI 3
 #define SS   2
+volatile uint8_t frequenz=6;
+
 
 void SPI_SlaveInit(void) {
     // Set MISO output, all others input
@@ -56,7 +58,12 @@ char SPI_SlaveReceive(char toMaster) {
     // Return data register
     return SPDR;
 }
-
+char SPI_SlaveReceive_nb (uint8_t * received)  // non-blocking receive !!
+{
+	if ( (!(SPSR & (1 << SPIF))))  return(0) ;    //  falls nichts empfangen wurde: sofort 0 zurückgeben !
+	* received = SPDR;    // empfangenes zeichen auslesen und in received ablegen
+	return(1);            // 1 zurückgeben als Zeichen, dass etwas empfangen wurde!
+}
 
 void uart_init(uint32_t baudrate) {
     // UBRR formula from datasheet
@@ -74,20 +81,40 @@ void uart_init(uint32_t baudrate) {
     // for interrupts: enable receive complete interrupt
     // UCSR0B |= (1<<RXCIE0); we do not use interrupts by now..
 }
+ISR(TIMER0_OVF_vect) //timer 0 overflow interrupt service routine
+{
+	static uint16_t count1=0,count2=0; //static: global lifetime, local visibility		
+	TCNT0 =231;				//25 ticks bis zum overflow
+	if(count2<=1000){
+		if(frequenz>count1) PORTD |= (1<<4); //Pin high setzen
+		else PORTD &= ~(1<<4); 				//Pin low setzen
+		count1++;
+		if(count1==10) count1=0;	// counter zurücksetzten
+	}
+	count2++;
+	if(count2>=2000){
+		count2=0 ;
+	}
+}
 
 int main() {
     uart_init(115200);
+    DDRD = (1<<4);
     uart_transmit_string("I bims der Slave\n\r");
-
     SPI_SlaveInit();
 	char c = 'X';
 	SwitchRedPL();
+	TCCR0B =3; 	//b prescaler 64 -> 4µs tick time, 250 ticks == 1ms
+	TCNT0= 231; 	//25 ticks bis zum overflow
+	TIMSK0=1; 	// enable timer 1 overflow interrupts
+	sei();    	//	enable interrupts (globally)
     while (1) {
-		
-        c = SPI_SlaveReceive(c);
+		//ultrasonicsensor();
+        //c = SPI_SlaveReceive(c);
         uart_sendstring("reveived");
         uart_transmit_slave(c);
         uart_transmit_string("\n\r");
+        
         //logik for traffic lights - the intepretation of the cmds of the master
         if(c=='3'){// Switch to green pedestrian traffic light
             SwitchGreenPL();
@@ -95,6 +122,7 @@ int main() {
         } 
         if(c=='4'){// Switch to red pedestrian traffic light
             SwitchRedPL();
+            frequenz=6;
         }
         
         if(c=='2'){ // night mode = blink yellow pkw traffic light

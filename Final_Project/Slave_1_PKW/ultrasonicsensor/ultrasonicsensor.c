@@ -81,15 +81,8 @@ int ultrasonicsensor(void)
 	init_uart(115200);
 	DDRD = (1<<5); //PD5 (output)
 	DDRD &= ~(1<<6);//PD6 (input)
-	uint8_t counter=0; //counter für messung 
-	uint16_t messung=0;// messung für ie entfernung
 	char entfernung[5];// um Die entfernung auszugeben
-	TCCR0B =3; 	//b prescaler 64 -> 4µs tick time, 250 ticks == 1ms
-	TCNT0= 231; 	//25 ticks bis zum overflow
-	TIMSK0=1; 	// enable timer 0 overflow interrupts
-	sei();    	//	enable interrupts (globally)
-	while(1)
-	{*/
+	
 		//Mesung ausloesen durch 10µs High time auf dem Trigger-Pin
 		PORTD&=~(1<<5);	
 		_delay_us(2);
@@ -110,7 +103,7 @@ int ultrasonicsensor(void)
 		uart_transmit('\n');
 		return messung;
 		messung=0;
-		
-	}
+		_delay_ms_(10);
+	
 }
-*/
+
