@@ -39,6 +39,7 @@ void DS13xx_WriteByte(unsigned char W_Byte);
 void DS13xx_Reset(void);
 void DS13xx_Init(void);
 uint8_t get_current_hour(void);
+uint8_t get_current_minute(void);
 uint8_t unsined_char_to_int(char* data);
 void init_DS13xx(void);
 
