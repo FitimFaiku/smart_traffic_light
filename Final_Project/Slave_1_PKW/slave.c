@@ -45,6 +45,16 @@ void uart_transmit_string(char *string) {
     while (!(SPSR & (1 << SPIF)));
     // Return data register
     return SPDR;
+   
+    //Wait for reception complete 
+    //while (!(SPSR & (1 << SPIF)));
+	if(SPSR & (1 << SPIF)) {
+		//Return Data Register
+		return SPDR;
+	} else {
+		return '0';
+	}
+     
 }*/
 
 char SPI_SlaveReceive(char toMaster) {

@@ -8,6 +8,7 @@
 #include <string.h> //for itoa function
 #include <stdio.h> // For sprintf
 #include <avr/sleep.h>
+#include <stdbool.h> // inkludiere bool
 
 #define PORT_DIRECTION DDRB
 #define PORT_VALUE PORTB
@@ -25,7 +26,7 @@
 static int16_t delay_for_communication_between_traffic_cycles_ms = 500;
 
 static char next_state = '0';
-static int16_t = counter_delay_ms=0;
+static int16_t counter_delay_ms=0;
 static volatile uint8_t current_hour;
 static volatile uint8_t current_minute;
 static volatile char last_state; 
@@ -50,6 +51,8 @@ void check_current_hour_and_initialize_volatile_variables(); //initialize volati
 void init_interrupts();// Initialize Interrupts 250 - ticks - 1ms 
 void check_slave_message_should_action();
 void check_current_state_and_do_action_if_needed();
+void set_traffic_light_green();
+
 void do_action();
 
 void SPI_MasterInit(void) {
@@ -72,9 +75,15 @@ uint8_t SPI_MasterTransmit(char cData) {
 char SPI_MasterReceive(void) {
     SPDR = 0x00;
     /* Wait for reception complete */
-    while (!(SPSR & (1 << SPIF)));
+    //while (!(SPSR & (1 << SPIF)));
+    if(SPSR & (1 << SPIF)) {
+		/* Return Data Register */
+		return SPDR;
+	} else {
+		return '0';
+	}
     /* Return Data Register */
-    return SPDR;
+    //return SPDR;
 }
 void uart_transmit(char character) {
     while (!(UCSR0A & (1 << 5)));
@@ -146,9 +155,8 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
         uart_transmit_string("6. Gesendet: Switch to Green <b>Cars</b> Traffic Light \n\r");
         is_traffic_light_cars_red = false;
         SS_UNSELECT 
-        counter_delay=0;
         is_cycling_traffic_light_cars_green= false;
-        next_state = '4'
+        next_state = '3';
     }
 
     //Part 2
@@ -180,7 +188,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
         uart_transmit_string("4. Gesendet: Switch to Green Walkers Traffic Light \n\r");
         SS_UNSELECT
 
-        next_state = '3'; // Next is cars schould get green
+        next_state = '4'; // Next is cars schould get green
         is_cycling_traffic_light_walkers_green=false;
     }
 
@@ -206,8 +214,9 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
             }
             cnt_s=0;
             menueopencounter++;
-            check_current_state_and_update_if_needed();
-            uart_transmit_string("Updating ...\n\r");
+            uart_transmit_string("Updating ... \n\r Next State:");
+            uart_transmit(next_state);
+            uart_transmit_string("\n\r");
             //setTime(menueopencounter, current_hour,cnt_min,cnt_s);
         }
         cnt_ms_ten=0;
@@ -219,14 +228,16 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
 void check_slave_message_should_action(){
 
     char slave_message = '0';
+    
+    slave_message = SPI_MasterReceive();
     // When Walkers is waiting and currently has red TODO
-    if(is_day_mode && datafromslave  == '6' ) {
+    if(is_day_mode && slave_message  == '6' ) {
         next_state = '3'; 
         // Switch Yellow Car -(?msTODO)-> Switch Red Car -(?msTODO)->Switch green for Walkers Traffic Light
     }
 
     // When car is waiting and currently has red TODO 
-    if(is_day_mode && datafromslave == '7'){
+    if(is_day_mode && slave_message == '7'){
         // Switch Red Walkers -(?msTODO)->  Switch Yellow Car -(?msTODO)-> Switch Green Car
         next_state = '4';
     }
@@ -235,7 +246,7 @@ void check_slave_message_should_action(){
 void set_traffic_light_cars_red_and_walkers_green() {
     // Switch Yellow Car -(?msTODO)-> Switch Red Car -(?msTODO)->Switch green for Walkers Traffic Light
 
-    counter_delay=0;
+    counter_delay_ms=0;
 
     is_cycling_traffic_light_walkers_green = true;
 
@@ -319,13 +330,13 @@ void do_action(void) {
     counter_seconds++;
     switch (next_state){
         static char last_state = '0';
-        case '0'
+        case '0':
 		uart_transmit_string("Current Status is 0 \n\r");
 		break;
         case '1' :
         uart_transmit_string("Current Status is 1 \n\r");
-        //Day Mode(will not be  send) -->  Init function set traffic Light green and Walkers Red
-        set_traffic_light_green();
+        //Day Mode(will not be  send) -->  Init function set traffic Light cars green and Walkers Red
+        set_traffic_light_walkers_red_and_cars_green();
         break;
         case '2':
         last_state='2';
@@ -342,7 +353,7 @@ void do_action(void) {
         case '3':
         if(!is_traffic_light_cars_red){
             //Switch to Red CarsTraffic Light and Green Walkers Traffic Light
-            set_traffic_light_cars_red_and_walkers_green()
+            set_traffic_light_cars_red_and_walkers_green();
         }
         
         break;
@@ -370,14 +381,15 @@ void do_action(void) {
 * Gets current hour from RTC - DS13xx and initializes cnr_h and current_status
 */
 void check_current_hour_and_initialize_volatile_variables(){
-    current_hour = get_current_hour();
-    current_minute = get_current_minute(); // TODO this methode impl.
+    //current_hour = get_current_hour();
+    current_hour = 20;
+    current_minute = get_current_minute(); 
+    //current_minute = 0;
     // 21-6:00 Nachtmodus TODO right times here
     if(current_hour>=21){ 
         should_action = true;
         //Night mode
         uart_transmit_string("Nachtmodus");
-
         //uart_transmit(current_hour+48);
         next_state = '2';
         uart_transmit_string("Nachtmodus, status: ");
@@ -431,7 +443,16 @@ void check_current_state_and_do_action_if_needed(){
         counter_to_do_action_seconds = 0;
     }
     if(should_action){
+		uart_transmit_string("do actio noooow ...\n\r With nex_state:");
+		uart_transmit(next_state);
+        uart_transmit_string("\n\r");
+        if(is_traffic_light_cars_red){
+			uart_transmit_string("is_traffic_light_cars_red is TRUE ...\n\r");
+		} else {
+			uart_transmit_string("is_traffic_light_cars_red is FALSE ...\n\r");
+		}
         do_action();
+        should_action = false;
     }
 }
 
