@@ -101,7 +101,7 @@ void uart_sendstringg (char * str){
 void DS13xx_Init(void) {
 
 // Initialise PORTA for the DS13xx clock
-	 DDRD = (1<<DS13xx_CE) | (1<<DS13xx_IO) | (1<<DS13xx_SCLK);
+	 DDRD |= (1<<DS13xx_CE) | (1<<DS13xx_IO) | (1<<DS13xx_SCLK);
 
 // Initialize the clock first, to prevent false triggering
 	 DS13xx_WriteByte(0x8E); // Send DS13xx command

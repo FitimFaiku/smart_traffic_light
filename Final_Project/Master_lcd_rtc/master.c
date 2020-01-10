@@ -22,35 +22,35 @@
 #define SS_UNSELECT PORT_VALUE |= (1 << SS);
 #define SS_SELECT PORT_VALUE &= ~(1 << SS);
 
+static int16_t delay_for_communication_between_traffic_cycles_ms = 500;
 
-static char current_state = '0';
+static char next_state = '0';
+static int16_t = counter_delay_ms=0;
 static volatile uint8_t current_hour;
 static volatile uint8_t current_minute;
 static volatile char last_state; 
 static volatile bool should_action = false;
+static bool is_cycling_traffic_light_cars_green = false;
+static bool is_cycling_traffic_light_walkers_green = false;
 static volatile bool is_day_mode;
+static volatile bool is_traffic_light_cars_red ;
 static volatile uint8_t counter_to_do_action_seconds;
 
 void init();
 void uart_init(uint32_t baudrate);
 void uart_transmit(char character);
-void uart_transmit_string();
+void uart_transmit_string(char *string);
 char uart_receive(void);
 void SPI_MasterInit(void);
 //void init_DS13xx() RTC from rtc.h
 //void LCD_and_Spi_Init() from dogm_lcd.h
-void check_current_hour_and_initialize_volatile_variables();
+void check_current_hour_and_initialize_volatile_variables(); //initialize volatile variables such as 
 //uint8_t get_current_hour() from rtc.h
 //uint8_t get_current_minute() from rtc.h
-
-void init_interrupts();
-void check_should_action();
-
-void do_action();
+void init_interrupts();// Initialize Interrupts 250 - ticks - 1ms 
+void check_slave_message_should_action();
 void check_current_state_and_do_action_if_needed();
-
-
-
+void do_action();
 
 void SPI_MasterInit(void) {
     // Set MOSI and SCK output, all others input
@@ -114,7 +114,77 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
 	// TODO get those values from the master module and set them initialy and afterwards display them!!!
     static uint8_t menueopencounter=0, cnt_ms=0,cnt_ms_ten=0, cnt_s=0, cnt_min=26; // gloabl lifetime, local visibillity Counter for miliseconds
     TCNT0 = 6; // counter auf 6 --> jede 256-6= 250 ticks --> 1 ms
+    counter_delay_ms++;
+    
+    // $$$$$$$$$$$$$$$$ Anfang check
 
+
+    //Part1
+    if(counter_delay_ms==delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_cars_green){
+        // see -> 3) Switch to Red <b>Walker</b> Traffic Light
+        SS_SELECT
+        //_delay_ms(delay_for_communication_between_traffic_cycles_ms);
+        SPI_MasterTransmit('3');
+        uart_transmit_string("3. Gesendet: Switch to Red Walker Traffic Light \n\r");
+        SS_UNSELECT
+    }
+
+    if(counter_delay_ms==delay_for_communication_between_traffic_cycles_ms*2 && is_cycling_traffic_light_cars_green){
+        // see -> 7) Switch to Yellow <b>Cars</b> Traffic Light
+        SS_SELECT
+        //_delay_ms(100);
+        SPI_MasterTransmit('7');
+        uart_transmit_string("7. Gesendet Switch to Yellow <b>Cars</b> Traffic Light\n\r");
+        SS_UNSELECT
+    }
+
+    if(counter_delay_ms==delay_for_communication_between_traffic_cycles_ms*3 && is_cycling_traffic_light_cars_green){
+        //see -> 6) Switch to Green <b>Cars</b> Traffic Light
+        SS_SELECT
+        //_delay_ms(100);
+        SPI_MasterTransmit('6');
+        uart_transmit_string("6. Gesendet: Switch to Green <b>Cars</b> Traffic Light \n\r");
+        is_traffic_light_cars_red = false;
+        SS_UNSELECT 
+        counter_delay=0;
+        is_cycling_traffic_light_cars_green= false;
+        next_state = '4'
+    }
+
+    //Part 2
+    if(counter_delay_ms==delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_walkers_green){
+        // see -> 7) Switch to Yellow <b>Cars</b> Traffic Light
+        SS_SELECT
+        //_delay_ms(100);
+        SPI_MasterTransmit('7');
+        uart_transmit_string("7. Gesendet\n\r");
+        SS_UNSELECT
+    }
+
+    if(counter_delay_ms==delay_for_communication_between_traffic_cycles_ms*2 && is_cycling_traffic_light_walkers_green){
+        // see -> 5) Switch to Red <b>Cars</b> Traffic Light
+    
+        SS_SELECT
+        //_delay_ms(100);
+        SPI_MasterTransmit('5');
+        uart_transmit_string("5. Gesendet: Switch to Red Cars Traffic Light \n\r");
+        is_traffic_light_cars_red = true;
+        SS_UNSELECT
+    }
+
+    if(counter_delay_ms==delay_for_communication_between_traffic_cycles_ms*3 && is_cycling_traffic_light_walkers_green){
+        //see -> 4) Switch to Green <b>Walkers</b> Traffic Light
+        SS_SELECT
+        //_delay_ms(100);
+        SPI_MasterTransmit('4');
+        uart_transmit_string("4. Gesendet: Switch to Green Walkers Traffic Light \n\r");
+        SS_UNSELECT
+
+        next_state = '3'; // Next is cars schould get green
+        is_cycling_traffic_light_walkers_green=false;
+    }
+
+    // $$$$$$$$$$$$$$$$ Ende check
     if(cnt_ms++>=100){
 		cnt_ms_ten++;
 		cnt_ms=0;
@@ -122,8 +192,9 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
     if(cnt_ms_ten>=10){
         cnt_s++;
         counter_to_do_action_seconds++;
+
         // Every second we check if maybe someone is near the Red Traffic Light slave -> master command 6 or 7 
-        check_should_action();
+        check_slave_message_should_action();
         if(cnt_s>=60){
             cnt_min++;
             if(cnt_min>=60){
@@ -145,19 +216,100 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
     
 }
 
-void check_should_action(){
+void check_slave_message_should_action(){
 
     char slave_message = '0';
-    // When walker is waiting and currently has red TODO
-    if(datafromslave  == '6' && last_state == '4') {
-        current_state = '3'; // Switch Yellow Car -(?msTODO)-> Switch Red Car -(?msTODO)->Switch green for Walkers Traffic Light
+    // When Walkers is waiting and currently has red TODO
+    if(is_day_mode && datafromslave  == '6' ) {
+        next_state = '3'; 
+        // Switch Yellow Car -(?msTODO)-> Switch Red Car -(?msTODO)->Switch green for Walkers Traffic Light
     }
 
     // When car is waiting and currently has red TODO 
-    if(datafromslave == '7' && TODO){
+    if(is_day_mode && datafromslave == '7'){
         // Switch Red Walkers -(?msTODO)->  Switch Yellow Car -(?msTODO)-> Switch Green Car
-
+        next_state = '4';
     }
+}
+
+void set_traffic_light_cars_red_and_walkers_green() {
+    // Switch Yellow Car -(?msTODO)-> Switch Red Car -(?msTODO)->Switch green for Walkers Traffic Light
+
+    counter_delay=0;
+
+    is_cycling_traffic_light_walkers_green = true;
+
+    /**
+    // see -> 7) Switch to Yellow <b>Cars</b> Traffic Light
+    SS_SELECT
+    _delay_ms(100);
+    SPI_MasterTransmit('7');
+    uart_transmit_string("7. Gesendet\n\r");
+    SS_UNSELECT
+
+    // see -> 5) Switch to Red <b>Cars</b> Traffic Light
+    
+    SS_SELECT
+    _delay_ms(100);
+    SPI_MasterTransmit('5');
+    uart_transmit_string("5. Gesendet: Switch to Red Cars Traffic Light \n\r");
+    is_traffic_light_cars_red = true;
+    SS_UNSELECT
+    
+    
+   //see -> 4) Switch to Green <b>Walkers</b> Traffic Light
+ 
+   SS_SELECT
+   _delay_ms(100);
+   SPI_MasterTransmit('4');
+   uart_transmit_string("4. Gesendet: Switch to Green Walkers Traffic Light \n\r");
+   SS_UNSELECT
+
+   // So next state is 4 Walkers have Green and Cars have Red
+    next_state = '3'
+    */
+
+}
+
+void set_traffic_light_walkers_red_and_cars_green() {
+    counter_delay_ms = 0; 
+    is_cycling_traffic_light_cars_green = true;
+    // Switch Red Walkers traffic Light -(?msTODO)-> Switch Yellow Cars Traffic Light -(?msTODO)->Switch green for Cars Traffic Light
+    
+    /**
+    if(counter_delay==delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_cars_green){
+        // see -> 3) Switch to Red <b>Walker</b> Traffic Light
+        SS_SELECT
+        //_delay_ms(delay_for_communication_between_traffic_cycles_ms);
+        SPI_MasterTransmit('3');
+        uart_transmit_string("3. Gesendet: Switch to Red Walker Traffic Light \n\r");
+        SS_UNSELECT
+    }
+
+    if(counter_delay==delay_for_communication_between_traffic_cycles_ms*2 && is_cycling_traffic_light_cars_green){
+        // see -> 7) Switch to Yellow <b>Cars</b> Traffic Light
+        SS_SELECT
+        //_delay_ms(100);
+        SPI_MasterTransmit('7');
+        uart_transmit_string("7. Gesendet Switch to Yellow <b>Cars</b> Traffic Light\n\r");
+        SS_UNSELECT
+    }
+
+    if(counter_delay==delay_for_communication_between_traffic_cycles_ms*3 && is_cycling_traffic_light_cars_green){
+        //see -> 6) Switch to Green <b>Cars</b> Traffic Light
+        SS_SELECT
+        //_delay_ms(100);
+        SPI_MasterTransmit('6');
+        uart_transmit_string("6. Gesendet: Switch to Green <b>Cars</b> Traffic Light \n\r");
+        is_traffic_light_cars_red = false;
+        SS_UNSELECT 
+        counter_delay=0;
+        is_cycling_traffic_light_cars_green= false;
+        next_state = '4'
+    }
+    */
+    // So current state is 6 Walkers have Red and Cars have Green 
+    //next_state = '6'
 }
 
 void do_action(void) {
@@ -165,31 +317,15 @@ void do_action(void) {
     
     static uint8_t counter_seconds = 0;
     counter_seconds++;
-    switch (current_state){
+    switch (next_state){
         static char last_state = '0';
         case '0'
-        // Init and listening state.
-        static uint8_t counter_send_night_mode_status = 0;
-        static uint8_t datafromslave = 0;
-        
-        // Only if datafromslave is Someone is near the <b>Walkers</b> Trafic Light (Slave to Master communication) and this Light is currently red
-        
-        counter_send_night_mode_status=0;
 		uart_transmit_string("Current Status is 0 \n\r");
 		break;
         case '1' :
         uart_transmit_string("Current Status is 1 \n\r");
-        //Day Mode(will not be  send) -->  Init function set traffic Light green and Walker Red
-
+        //Day Mode(will not be  send) -->  Init function set traffic Light green and Walkers Red
         set_traffic_light_green();
-        SS_SELECT
-        _delay_ms(100);
-        SPI_MasterTransmit('2');
-        uart_transmit_string("2 Gesendet\n\r");
-        SS_UNSELECT
-
-
-
         break;
         case '2':
         last_state='2';
@@ -200,34 +336,32 @@ void do_action(void) {
         SPI_MasterTransmit('2');
         uart_transmit_string("2 Gesendet\n\r");
         SS_UNSELECT
-
-        current_state='0';
+        next_state='0';
         break;
         
         case '3':
-        last_state='3';
-        //Switch to Red Traffic Light and Green Walkers Traffic Light
-
+        if(!is_traffic_light_cars_red){
+            //Switch to Red CarsTraffic Light and Green Walkers Traffic Light
+            set_traffic_light_cars_red_and_walkers_green()
+        }
+        
         break;
         case '4':
-        last_state='4';
         //Switch to Green Cars Traffic Light and Red Walkers Traffic Light
-        break;
-        case '5':
-        //Switch to Yellow <b>Cars</b> Traffic Light
+        if(is_traffic_light_cars_red){
+            set_traffic_light_walkers_red_and_cars_green();
+        }
+       
         break;
         case '6':
-        //Someone is near the <b>Walkers</b> Trafic Light (Slave to Master communication)
-        break;
-        case '7':
-        //Someone is near the <b>Cars</b> Trafic Light (Slave to Master communication)
+        //Switch to Yellow <b>Cars</b> Traffic Light
+        // I dont care about Yellow because it is handled in the function.
         break;
         default:
-        uart_transmit_string("default");
-        uart_transmit(current_state);
+        uart_transmit_string("default:");
+        uart_transmit(next_state);
+        uart_transmit_string("\n\r");
         break;
-        
-
     }
 }
 
@@ -240,18 +374,20 @@ void check_current_hour_and_initialize_volatile_variables(){
     current_minute = get_current_minute(); // TODO this methode impl.
     // 21-6:00 Nachtmodus TODO right times here
     if(current_hour>=21){ 
+        should_action = true;
         //Night mode
         uart_transmit_string("Nachtmodus");
+
         //uart_transmit(current_hour+48);
-        current_state = '2';
+        next_state = '2';
         uart_transmit_string("Nachtmodus, status: ");
-        uart_transmit(current_state);
+        uart_transmit(next_state);
         is_day_mode = false;
     } else {
         should_action = true;
         // Day mode
         uart_transmit_string("Tagesmodus");
-        current_state = '1';
+        next_state = '1';
         is_day_mode = true;
     }
 }
@@ -287,9 +423,10 @@ void init_interrupts(){
      sei(); //enable interrupts(globally)
 }
 
+
 void check_current_state_and_do_action_if_needed(){
+    
     if(counter_to_do_action_seconds >=30 && !should_action){
-        // Reverse from One Green - To Other TODO
         should_action = true;
         counter_to_do_action_seconds = 0;
     }
@@ -306,7 +443,7 @@ int main() {
     
     while(1){
         sleep_mode(); //save power
-        check_current_state_and_update_if_need_for_action();
+        check_current_state_and_do_action_if_needed();
     }
 }
 

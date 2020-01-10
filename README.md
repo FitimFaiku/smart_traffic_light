@@ -40,3 +40,5 @@ https://www.avrfreaks.net/forum/atmega32-interfacing-spi
 4) Switch to Green
 5) Switch to Yellow
 5) Someone is near the Trafic Light (Slave to Master communication)
+
+Intervall 1, Intervall 2
