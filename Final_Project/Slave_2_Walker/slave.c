@@ -15,7 +15,7 @@
 #define MISO 4
 #define MOSI 3
 #define SS   2
-volatile uint8_t frequenz=6;
+volatile uint8_t frequenz=0;
 
 
 void SPI_SlaveInit(void) {
@@ -54,16 +54,14 @@ char SPI_SlaveReceive(char toMaster) {
 	SPDR = toMaster;
     // Wait for reception complete
     // SPI Status Reg & 1<<SPI Interrupt Flag
-    while (!(SPSR & (1 << SPIF)));
+    if (!(SPSR & (1 << SPIF))){
     // Return data register
     return SPDR;
+	}else{
+		return 0;
+	}	
 }
-char SPI_SlaveReceive_nb (uint8_t * received)  // non-blocking receive !!
-{
-	if ( (!(SPSR & (1 << SPIF))))  return(0) ;    //  falls nichts empfangen wurde: sofort 0 zurückgeben !
-	* received = SPDR;    // empfangenes zeichen auslesen und in received ablegen
-	return(1);            // 1 zurückgeben als Zeichen, dass etwas empfangen wurde!
-}
+
 
 void uart_init(uint32_t baudrate) {
     // UBRR formula from datasheet
@@ -109,8 +107,8 @@ int main() {
 	TIMSK0=1; 	// enable timer 1 overflow interrupts
 	sei();    	//	enable interrupts (globally)
     while (1) {
-		//ultrasonicsensor();
-        //c = SPI_SlaveReceive(c);
+		ultrasonicsensor();
+        c = SPI_SlaveReceive(c);
         uart_sendstring("reveived");
         uart_transmit_slave(c);
         uart_transmit_string("\n\r");

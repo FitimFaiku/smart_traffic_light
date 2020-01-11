@@ -61,10 +61,14 @@ char SPI_SlaveReceive(char toMaster) {
 	SPDR = toMaster;
     // Wait for reception complete
     // SPI Status Reg & 1<<SPI Interrupt Flag
-    while (!(SPSR & (1 << SPIF)));
+    if (!(SPSR & (1 << SPIF))){
     // Return data register
     return SPDR;
+	}else{
+		return 0;
+	}	
 }
+
 
 
 void uart_init(uint32_t baudrate) {
