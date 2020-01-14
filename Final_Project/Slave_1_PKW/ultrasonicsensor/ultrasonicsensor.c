@@ -95,7 +95,7 @@ int ultrasonicsensor(void)
 		while((PIND&(1<<6))!=0){
 			messung++;
 			_delay_us(1); 
-		}*/
+		}
 		messung=messung/48; // /48 um die gemessene Zeit in cm umzurechnen
 		inttostr(messung,entfernung);
 		uart_sendstring(entfernung); 
