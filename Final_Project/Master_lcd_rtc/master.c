@@ -281,7 +281,7 @@ void check_slave_message_should_action(){
     uint8_t slave_message_int = 0;
     
      // When Walkers is waiting and currently has red TODO slave_message_int+48
-    if(is_day_mode && next_state=='3' && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
+    if(false && is_day_mode && next_state=='3' && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
         //see --> 5) Check if Someone is near the <b>Walkers -- Slave 2</b> Traffic Light master --> slave request
         SS_SELECT_SLAVE_2
         //_delay_ms(100);
@@ -293,7 +293,7 @@ void check_slave_message_should_action(){
 
     }
     // When Car is waiting and currently has red TODO slave_message_int+48
-    if(is_day_mode && next_state == '4' && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
+    if(flase && is_day_mode && next_state == '4' && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
         //see --> 5) Check if Someone is near the <b>Cars -- Slave 1</b> Traffic Light master --> slave request
         SS_SELECT_SLAVE_1
         //_delay_ms(100);
@@ -316,54 +316,6 @@ void do_action(void) {
         //Switch to Red CarsTraffic Light and Green Walkers Traffic Light
         set_traffic_light_cars_red_and_walkers_green();
     }
-
-    /*
-    switch (next_state){
-        static char last_state = '0';
-        case '0':
-        
-		uart_transmit_string("Current Status is 0 \n\r");
-		break;
-        case '1' :
-        uart_transmit_string("Current Status is 1 \n\r");
-        //Day Mode(will not be  send) -->  Init function set traffic Light cars green and Walkers Red
-        set_traffic_light_walkers_red_and_cars_green();
-        break;
-        case '2':
-        last_state='2';
-        uart_transmit_string("2 senden\n\r");
-        //Night Mode --> Send to slaves code 2 
-        SS_SELECT
-        _delay_ms(100);
-        SPI_MasterTransmit('2');
-        uart_transmit_string("2 Gesendet\n\r");
-        SS_UNSELECT
-        next_state='0';
-        break;
-        
-        case '3':
-        if(!is_traffic_light_cars_red){
-            
-        }
-        
-        break;
-        case '4':
-        
-        if(is_traffic_light_cars_red){
-            set_traffic_light_walkers_red_and_cars_green();
-        }
-       
-        break;
-        case '6':
-        //Switch to Yellow <b>Cars</b> Traffic Light
-        // I dont care about Yellow because it is handled in the function.
-        break;
-        default:
-        uart_transmit_string("default:");
-        uart_transmit(next_state);
-        uart_transmit_string("\n\r");
-        break;
-    }*/
 }
 
 
@@ -453,10 +405,10 @@ int main() {
     // Init of uart, SS-SPI, SPI_MasterInit, init_DS13xx, LCD_and_SPI_Init, init_volatile_variables,init_interrupts
     init();
     //Sleep mode setzen(configurieren)
-    set_sleep_mode(SLEEP_MODE_IDLE);
+    //set_sleep_mode(SLEEP_MODE_IDLE);
     
     while(1){
-        sleep_mode(); //save power
+        //sleep_mode(); //save power
         check_current_state_and_do_action_if_needed();
     }
 }
