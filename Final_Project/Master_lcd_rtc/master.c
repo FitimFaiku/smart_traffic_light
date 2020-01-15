@@ -39,7 +39,7 @@
 
 static int16_t delay_for_communication_between_traffic_cycles_ms = 500;
 
-static char next_state = '0';
+static volatile char next_state = '0';
 static int16_t counter_delay_ms=0;
 static volatile uint8_t current_hour;
 static volatile uint8_t current_minute;
@@ -280,7 +280,7 @@ void check_slave_message_should_action(){
     uint8_t slave_message_int = 0;
     
      // When Walkers is waiting and currently has red TODO slave_message_int+48
-    if(is_day_mode && nex_state=='3' && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
+    if(is_day_mode && next_state=='3' && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
         //see --> 5) Check if Someone is near the <b>Walkers -- Slave 2</b> Traffic Light master --> slave request
         SS_SELECT_SLAVE_2
         //_delay_ms(100);
@@ -292,7 +292,7 @@ void check_slave_message_should_action(){
 
     }
     // When Car is waiting and currently has red TODO slave_message_int+48
-    if(is_day_mode && nex_state == '4' && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
+    if(is_day_mode && next_state == '4' && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
         //see --> 5) Check if Someone is near the <b>Cars -- Slave 1</b> Traffic Light master --> slave request
         SS_SELECT_SLAVE_1
         //_delay_ms(100);
@@ -310,11 +310,11 @@ void do_action(void) {
     static uint8_t counter_seconds = 0;
     counter_seconds++;
 
-    if(is_traffic_light_cars_red && nex_state='4'){
+    if(is_traffic_light_cars_red && next_state=='4'){
         //Switch to Green Cars Traffic Light and Red Walkers Traffic Light
         set_traffic_light_walkers_red_and_cars_green();
     }
-    if(!is_traffic_light_cars_red && next_state='3'){
+    if(!is_traffic_light_cars_red && next_state=='3'){
         //Switch to Red CarsTraffic Light and Green Walkers Traffic Light
         set_traffic_light_cars_red_and_walkers_green();
     }
@@ -437,7 +437,7 @@ void check_current_state_and_do_action_if_needed(){
         should_action = true;
     }
     if(should_action){
-		uart_transmit_string("do actio noooow ...\n\r With nex_state:");
+		uart_transmit_string("do actio noooow ...\n\r With next_state:");
 		uart_transmit(next_state);
         uart_transmit_string("\n\r");
         if(is_traffic_light_cars_red){
