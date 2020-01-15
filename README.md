@@ -30,13 +30,14 @@ git commit -m "Message" --> Einene Commit erstellen zum pushen danach. <br />
 git push --> Aktuellen commit zu remote pushen. <br />
 
 ### Codes 
-0) Night Mode
 1) Blink Green
 2) Switch to Green Traffic Light
 3) Switch to Yellow Traffic Light
 4) Switch to Red Traffic Light
 5) Check if Someone is near the Traffic Light master --> slave request 
 6) Yes someone is near the Traffic Light
+7) Night Mode -- night mode
+
 
 1) Tagesmodus -->  Init function set traffic Light green and Walker Red
 2) Nachtmodus --> Send to slaves code 2
