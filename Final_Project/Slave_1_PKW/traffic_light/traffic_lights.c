@@ -120,7 +120,7 @@ void BlinkGreenTL(){
 		}
 		ws2812_setleds(rgb,35); //green
 		_delay_ms(1000);
-		for (uint8_t i = 11; i<23; i++){
+		for (uint8_t i = 23; i<35; i++){
 			rgb[i].r = rot_0;
 			rgb[i].g = green_0;
 			rgb[i].b = blue_0;

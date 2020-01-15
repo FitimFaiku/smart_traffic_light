@@ -121,9 +121,9 @@ int main() {
 			uart_transmit_string("\n\r");
            c = s;
 		}*/
-		s=SPI_SlaveReceive(s);
+		c=SPI_SlaveReceive(c);
 		uart_sendstring("received:");
-		uart_transmit_slave(s);
+		uart_transmit_slave(c);
 		uart_transmit_string("\n\r");
         
         //logik for traffic lights - the intepretation of the cmds of the master
@@ -153,7 +153,7 @@ int main() {
 			//check if someone is near the traffic light
 			//if true,return 6
 		}
-		//if()
+		//if(c==7){} // gelb blink
         
     }
 }
