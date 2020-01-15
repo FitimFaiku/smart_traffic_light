@@ -150,7 +150,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
         SS_SELECT_SLAVE_2
         //_delay_ms(delay_for_communication_between_traffic_cycles_ms);
         SPI_MasterTransmit('1');
-        uart_transmit_string("1. Gesendet: Blink Walkers Traffic Light Green\n\r");
+        uart_transmit_string("1. Gesendet: Blink <b>Walkers</b> Traffic Light Green\n\r");
         SS_UNSELECT_SLAVE_2
     }
 
@@ -159,7 +159,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
         SS_SELECT_SLAVE_2
         //_delay_ms(delay_for_communication_between_traffic_cycles_ms);
         SPI_MasterTransmit('4');
-        uart_transmit_string("4. Gesendet: Switch to Red Walker Traffic Light \n\r");
+        uart_transmit_string("4. Gesendet: Switch to Red <b>Walkers</b> Traffic Light \n\r");
         SS_UNSELECT_SLAVE_2
     }
 
@@ -168,7 +168,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
         SS_SELECT_SLAVE_1
         //_delay_ms(100);
         SPI_MasterTransmit('3');
-        uart_transmit_string("3. Gesendet Switch to Yellow <b>Cars</b> Traffic Light\n\r");
+        uart_transmit_string("3. Gesendet Switch to Yellow <b>Cars</b> Traffic Light \n\r");
         SS_UNSELECT_SLAVE_1
     }
 
@@ -191,7 +191,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
         SS_SELECT_SLAVE_1
         //_delay_ms(100);
         SPI_MasterTransmit('1');
-        uart_transmit_string("1. Gesendet Blink <b>Cars</b> Traffic Light\n\r");
+        uart_transmit_string("1. Gesendet Blink <b>Cars</b> Traffic Light \n\r");
         SS_UNSELECT_SLAVE_1
     }
     if(counter_delay_ms==11*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_walkers_green){
@@ -199,7 +199,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
         SS_SELECT_SLAVE_1
         //_delay_ms(100);
         SPI_MasterTransmit('3');
-        uart_transmit_string("3. Gesendet  Switch to Yellow Cars Traffic Light \n\r");
+        uart_transmit_string("3. Gesendet: Switch to Yellow <b>Cars</b> Traffic Light \n\r");
         SS_UNSELECT_SLAVE_1
     }
 
@@ -209,7 +209,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
         SS_SELECT_SLAVE_1
         //_delay_ms(100);
         SPI_MasterTransmit('4');
-        uart_transmit_string("4. Gesendet: Switch to Red Cars Traffic Light \n\r");
+        uart_transmit_string("4. Gesendet: Switch to Red <b>Cars</b> Traffic Light \n\r");
         is_traffic_light_cars_red = true;
         SS_UNSELECT_SLAVE_1
     }
@@ -219,7 +219,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
         SS_SELECT_SLAVE_2
         //_delay_ms(100);
         SPI_MasterTransmit('2');
-        uart_transmit_string("2. Gesendet: Switch to Green Walkers Traffic Light \n\r");
+        uart_transmit_string("2. Gesendet: Switch to Green <b>Walkers</b> Traffic Light \n\r");
         SS_UNSELECT_SLAVE_2
 
         next_state = '4'; // Next is cars schould get green
