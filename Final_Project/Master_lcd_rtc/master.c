@@ -235,6 +235,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
     if(cnt_ms_ten>=10){
         cnt_s++;
         counter_to_do_action_seconds++;
+        uart_transmit_string("Updating seconds ... \n\r");
 
         // Every second we check if maybe someone is near the Red Traffic Light slave -> master command 6 or 7 
         check_slave_message_should_action();
@@ -249,9 +250,9 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
             }
             cnt_s=0;
             menueopencounter++;
-            uart_transmit_string("Updating ... \n\r Next State:");
-            uart_transmit(next_state);
-            uart_transmit_string("\n\r");
+            //uart_transmit_string("Updating ... \n\r Next State:");
+            //uart_transmit(next_state);
+            //uart_transmit_string("\n\r");
             //setTime(menueopencounter, current_hour,cnt_min,cnt_s);
         }
         cnt_ms_ten=0;
@@ -306,9 +307,6 @@ void check_slave_message_should_action(){
 
 void do_action(void) {
     //TODO check if slave gives some message here and react on that.
-    
-    static uint8_t counter_seconds = 0;
-    counter_seconds++;
 
     if(is_traffic_light_cars_red && next_state=='4'){
         //Switch to Green Cars Traffic Light and Red Walkers Traffic Light
@@ -434,6 +432,7 @@ void init_interrupts(){
 void check_current_state_and_do_action_if_needed(){
     
     if(counter_to_do_action_seconds == 30 && !should_action){
+        uart_transmit_string("30 sec since lst state \n \r");
         should_action = true;
     }
     if(should_action){
