@@ -118,14 +118,14 @@ void BlinkGreenTL(){
 			rgb[i].g = Green;
 			rgb[i].b = blue_0;
 		}
-		ws2812_setleds(rgb,35); //gelb
+		ws2812_setleds(rgb,35); //green
 		_delay_ms(1000);
 		for (uint8_t i = 11; i<23; i++){
 			rgb[i].r = rot_0;
 			rgb[i].g = green_0;
 			rgb[i].b = blue_0;
 		}
-		ws2812_setleds(rgb,35); // gelb ausschalten
+		ws2812_setleds(rgb,35); // green ausschalten
 		_delay_ms(1000);
 }
 

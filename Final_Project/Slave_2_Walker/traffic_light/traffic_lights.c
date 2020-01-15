@@ -71,6 +71,13 @@ void BlinkGreenPL(){
 			}
 			ws2812_setleds(rgb,24); // blink green
 			_delay_ms(1000);
+			for (uint8_t i = 11; i<24; i++){
+				rgb[i].r = rot_0;
+				rgb[i].g = green_0;
+				rgb[i].b = blue_0;
+			}
+			ws2812_setleds(rgb,24); //green ausschalten
+			_delay_ms(1000);
 }
 void SwitchYellowTL(){
 			for (uint8_t i =0; i<11; i++){

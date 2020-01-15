@@ -153,7 +153,7 @@ int main() {
 			//check if someone is near the traffic light
 			//if true,return 6
 		}
-		if()
+		//if()
         
     }
 }
