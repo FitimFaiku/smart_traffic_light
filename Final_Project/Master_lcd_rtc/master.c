@@ -73,7 +73,7 @@ void SPI_MasterInit(void) {
     // Set MOSI and SCK output, all others input
     PORT_DIRECTION |= (1 << MOSI) | (1 << SCK) | (1<<SS);
 
-    PORT_DIRECTION_SLAVE |= (1<<SS_SLAVE_1) | (1<<SS_SELECT_SLAVE_2);
+    PORT_DIRECTION_SLAVE |= (1<<SS_SLAVE_1) | (1<<SS_SLAVE_2);
     // Enable SPI, Master, set clock rate fck/16
     SPCR |= (1 << SPE) | (1 << MSTR) | (1 << SPR0) | (1 << SPR1);
 }
