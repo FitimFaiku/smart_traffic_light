@@ -30,7 +30,14 @@ git commit -m "Message" --> Einene Commit erstellen zum pushen danach. <br />
 git push --> Aktuellen commit zu remote pushen. <br />
 
 ### Codes 
-0) Check if Someone is near the Traffic Light master --> slave request
+0) Night Mode
+1) Blink Green
+2) Switch to Green Traffic Light
+3) Switch to Yellow Traffic Light
+4) Switch to Red Traffic Light
+5) Check if Someone is near the Traffic Light master --> slave request 
+6) Yes someone is near the Traffic Light
+
 1) Tagesmodus -->  Init function set traffic Light green and Walker Red
 2) Nachtmodus --> Send to slaves code 2
 3) Switch to Red <b>Walker</b> Traffic Light
@@ -47,5 +54,4 @@ git push --> Aktuellen commit zu remote pushen. <br />
 https://www.avrfreaks.net/forum/atmega32-interfacing-spi
 https://www.aeq-web.com/atmega328-4bit-16x2-lcd-display-amtel-studio-c/?lang=en
 
-Intervall 1, Intervall 2
 
