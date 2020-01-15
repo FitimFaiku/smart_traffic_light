@@ -30,6 +30,7 @@ git commit -m "Message" --> Einene Commit erstellen zum pushen danach. <br />
 git push --> Aktuellen commit zu remote pushen. <br />
 
 ### Codes 
+0) Check if Someone is near the Traffic Light master --> slave request
 1) Tagesmodus -->  Init function set traffic Light green and Walker Red
 2) Nachtmodus --> Send to slaves code 2
 3) Switch to Red <b>Walker</b> Traffic Light
@@ -39,8 +40,8 @@ git push --> Aktuellen commit zu remote pushen. <br />
 7) Switch to Yellow <b>Cars</b> Traffic Light
 8) Someone is near the <b>Walkers</b> Traffic Light (Slave to Master communication)
 9) Someone is near the <b>Cars</b> Traffic Light (Slave to Master communication)
-10) Switch off <b>Cars</b> Traffic Light
-11) Switch off <b>Walkers</b> Traffic Light
+10) Blink <b>Cars</b> Traffic Light Green
+11) Blink <b>Walkers</b> Traffic Light Green
 
 ## Sources 
 https://www.avrfreaks.net/forum/atmega32-interfacing-spi

@@ -13,15 +13,29 @@
 #define PORT_DIRECTION DDRB
 #define PORT_VALUE PORTB
 
+#define PORT_DIRECTION_SLAVE DDRD
+#define PORT_VALUE_SLAVE PORTD
+
+
 // Pin definitions (on Port B)
 #define SCK  5
 #define MISO 4
 #define MOSI 3
 #define SS   2
 
+// Pin definitions (on port D)
+#define SS_SLAVE_1 3
+#define SS_SLAVE_2 4
+
 // Defines for the SS pin
 #define SS_UNSELECT PORT_VALUE |= (1 << SS);
 #define SS_SELECT PORT_VALUE &= ~(1 << SS);
+
+#define SS_UNSELECT_SLAVE_1 PORT_VALUE_SLAVE |= (1 << SS_SLAVE_1);
+#define SS_SELECT_SLAVE_1 PORT_VALUE_SLAVE &= ~(1 << SS_SLAVE_1);
+
+#define SS_UNSELECT_SLAVE_2 PORT_VALUE_SLAVE |= (1 << SS_SLAVE_2);
+#define SS_SELECT_SLAVE_2 PORT_VALUE_SLAVE &= ~(1 << SS_SLAVE_2);
 
 static int16_t delay_for_communication_between_traffic_cycles_ms = 500;
 
@@ -58,6 +72,8 @@ void do_action();
 void SPI_MasterInit(void) {
     // Set MOSI and SCK output, all others input
     PORT_DIRECTION |= (1 << MOSI) | (1 << SCK) | (1<<SS);
+
+    PORT_DIRECTION_SLAVE |= (1<<SS_SLAVE_1) | (1<<SS_SELECT_SLAVE_2);
     // Enable SPI, Master, set clock rate fck/16
     SPCR |= (1 << SPE) | (1 << MSTR) | (1 << SPR0) | (1 << SPR1);
 }
@@ -130,63 +146,80 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
 
     //Part1
     if(counter_delay_ms==delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_cars_green){
+        // see -> 11) Blink <b>Walker</b> Traffic Light Green
+        SS_SELECT_SLAVE_2
+        //_delay_ms(delay_for_communication_between_traffic_cycles_ms);
+        SPI_MasterTransmit('11');
+        uart_transmit_string("11. Gesendet: Blink Walkers Traffic Light Green\n\r");
+        SS_UNSELECT_SLAVE_2
+    }
+
+    if(counter_delay_ms==11*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_cars_green){
         // see -> 3) Switch to Red <b>Walker</b> Traffic Light
-        SS_SELECT
+        SS_SELECT_SLAVE_2
         //_delay_ms(delay_for_communication_between_traffic_cycles_ms);
         SPI_MasterTransmit('3');
         uart_transmit_string("3. Gesendet: Switch to Red Walker Traffic Light \n\r");
-        SS_UNSELECT
+        SS_UNSELECT_SLAVE_2
     }
 
-    if(counter_delay_ms==delay_for_communication_between_traffic_cycles_ms*2 && is_cycling_traffic_light_cars_green){
+    if(counter_delay_ms==13*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_cars_green){
         // see -> 7) Switch to Yellow <b>Cars</b> Traffic Light
-        SS_SELECT
+        SS_SELECT_SLAVE_1
         //_delay_ms(100);
         SPI_MasterTransmit('7');
         uart_transmit_string("7. Gesendet Switch to Yellow <b>Cars</b> Traffic Light\n\r");
-        SS_UNSELECT
+        SS_UNSELECT_SLAVE_1
     }
 
-    if(counter_delay_ms==delay_for_communication_between_traffic_cycles_ms*3 && is_cycling_traffic_light_cars_green){
+    if(counter_delay_ms==19*delay_for_communication_between_traffic_cycles_ms*3 && is_cycling_traffic_light_cars_green){
         //see -> 6) Switch to Green <b>Cars</b> Traffic Light
-        SS_SELECT
+        SS_SELECT_SLAVE_1
         //_delay_ms(100);
         SPI_MasterTransmit('6');
         uart_transmit_string("6. Gesendet: Switch to Green <b>Cars</b> Traffic Light \n\r");
         is_traffic_light_cars_red = false;
-        SS_UNSELECT 
+        SS_SELECT_SLAVE_1 
         is_cycling_traffic_light_cars_green= false;
         next_state = '3';
     }
 
     //Part 2
     if(counter_delay_ms==delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_walkers_green){
+        // see -> 10) Blink <b>Cars</b> Traffic Light
+        SS_SELECT_SLAVE_1
+        //_delay_ms(100);
+        SPI_MasterTransmit('10');
+        uart_transmit_string("10. Gesendet Blink <b>Cars</b> Traffic Light\n\r");
+        SS_UNSELECT_SLAVE_1
+    }
+    if(counter_delay_ms==11*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_walkers_green){
         // see -> 7) Switch to Yellow <b>Cars</b> Traffic Light
-        SS_SELECT
+        SS_SELECT_SLAVE_1
         //_delay_ms(100);
         SPI_MasterTransmit('7');
         uart_transmit_string("7. Gesendet\n\r");
-        SS_UNSELECT
+        SS_UNSELECT_SLAVE_1
     }
 
-    if(counter_delay_ms==delay_for_communication_between_traffic_cycles_ms*2 && is_cycling_traffic_light_walkers_green){
+    if(counter_delay_ms==17*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_walkers_green){
         // see -> 5) Switch to Red <b>Cars</b> Traffic Light
     
-        SS_SELECT
+        SS_SELECT_SLAVE_1
         //_delay_ms(100);
         SPI_MasterTransmit('5');
         uart_transmit_string("5. Gesendet: Switch to Red Cars Traffic Light \n\r");
         is_traffic_light_cars_red = true;
-        SS_UNSELECT
+        SS_UNSELECT_SLAVE_1
     }
 
-    if(counter_delay_ms==delay_for_communication_between_traffic_cycles_ms*3 && is_cycling_traffic_light_walkers_green){
+    if(counter_delay_ms==19*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_walkers_green){
         //see -> 4) Switch to Green <b>Walkers</b> Traffic Light
-        SS_SELECT
+        SS_SELECT_SLAVE_2
         //_delay_ms(100);
         SPI_MasterTransmit('4');
         uart_transmit_string("4. Gesendet: Switch to Green Walkers Traffic Light \n\r");
-        SS_UNSELECT
+        SS_UNSELECT_SLAVE_2
 
         next_state = '4'; // Next is cars schould get green
         is_cycling_traffic_light_walkers_green=false;
@@ -410,14 +443,17 @@ void init(){
     uart_init(115200);
     uart_transmit_string("I bims der Master\n\r");
 
-    DDRB |= SS;
+    //Is done in spi masterINIT
+    //PORT_DIRECTION |= (1<<SS);
+    //PORT_DIRECTION_SLAVE |= (1<SS_SELECT_SLAVE_1) | (1<<SS_SELECT_SLAVE_2);
+
     SPI_MasterInit();
     // INIT for the real time clock
     init_DS13xx();
 
     // Initialize the SPI interface for the LCD display
     // Initialize the LCD display
-    LCD_and_Spi_Init();
+    //LCD_and_Spi_Init();
     
     //initialize volatile variables such as 
     check_current_hour_and_initialize_volatile_variables();
