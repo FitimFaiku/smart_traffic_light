@@ -163,7 +163,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
         SS_UNSELECT_SLAVE_2
     }
 
-    if(counter_delay_ms==13*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_cars_green){
+    if(counter_delay_ms==17*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_cars_green){
         // see -> 3) Switch to Yellow <b>Cars -- Slave 1</b> Traffic Light
         SS_SELECT_SLAVE_1
         //_delay_ms(100);
@@ -172,7 +172,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
         SS_UNSELECT_SLAVE_1
     }
 
-    if(counter_delay_ms==19*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_cars_green){
+    if(counter_delay_ms==27*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_cars_green){
         //see -> 2) Switch to Green <b>Cars -- Slave 1</b> Traffic Light
         SS_SELECT_SLAVE_1
         //_delay_ms(100);
@@ -203,7 +203,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
         SS_UNSELECT_SLAVE_1
     }
 
-    if(counter_delay_ms==17*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_walkers_green){
+    if(counter_delay_ms==21*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_walkers_green){
         // see -> 4) Switch to Red <b>Cars -- Slave 1</b> Traffic Light
     
         SS_SELECT_SLAVE_1
@@ -214,7 +214,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
         SS_UNSELECT_SLAVE_1
     }
 
-    if(counter_delay_ms==19*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_walkers_green){
+    if(counter_delay_ms==29*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_walkers_green){
         //see ->2) Switch to Green <b>Walkers -- Slave 2</b> Traffic Light
         SS_SELECT_SLAVE_2
         //_delay_ms(100);
@@ -293,12 +293,17 @@ void check_slave_message_should_action(){
 
     }
     // When Car is waiting and currently has red TODO slave_message_int+48
-    if(1==2 && is_day_mode && next_state == '4' && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
+    if(is_day_mode && next_state == '4' && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
         //see --> 5) Check if Someone is near the <b>Cars -- Slave 1</b> Traffic Light master --> slave request
         SS_SELECT_SLAVE_1
         //_delay_ms(100);
         slave_message_int = SPI_MasterTransmit('5');
-        uart_transmit_string("5. Gesendet: Check if Someone is near the Traffic Light master --> slave request \n\r");
+        uart_transmit_string("5. Gesendet: Check if Someone is near the Traffic Light master. \n\r");
+        if(slave_message != 0) {
+			uart_transmit_string("Got something else than zero \n\r");
+			uart_transmit(slave_message+48);
+		}
+		
         SS_UNSELECT_SLAVE_1
 
         // TODO check slave message
@@ -333,9 +338,12 @@ void check_current_hour_and_initialize_volatile_variables(){
         //Night mode
         uart_transmit_string("Nachtmodus");
         //uart_transmit(current_hour+48);
-        next_state = '0';
         uart_transmit_string("Nachtmodus, status: ");
-        uart_transmit(next_state);
+        SS_SELECT_SLAVE_2
+        //_delay_ms(delay_for_communication_between_traffic_cycles_ms);
+        SPI_MasterTransmit('7');
+        uart_transmit_string("7. Gesendet: Blink <b>Cars</b> Traffic Light Orange\n\r");
+        SS_UNSELECT_SLAVE_2
         is_day_mode = false;
     } else {
         should_action = true;
