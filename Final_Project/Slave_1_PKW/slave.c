@@ -89,32 +89,47 @@ void uart_init(uint32_t baudrate) {
 }
 
 int main() {
+	uint8_t status=0;
     uart_init(115200);
     uart_transmit_string("I bims der Slave\n\r");
-
+	
+		
     SPI_SlaveInit();
 	char c = 'X';
 	SwitchGreenTL();
     while (1) {
-		
-        c = SPI_SlaveReceive(c);
-        uart_sendstring("reveived");
+		char s=SPI_SlaveReceive(status);
+	if(s!=0){
+		uart_sendstring("reveived");
         uart_transmit_slave(c);
         uart_transmit_string("\n\r");
+        c=s;
+	}
+        
         //logik for traffic lights - the intepretation of the cmds of the master
-        if(c=='3'){// Switch to rot
-            SwitchRedTL();
+        if(c=='1'){// blink green
+            BlinkGreenTL();
         }
-        if(c=='4'){// Switch to green
+        if(c=='2'){// Switch to green
             SwitchGreenTL();
         }
-        if(c=='5'){ // Switch to yellow
+        if(c=='3'){ // Switch to yellow
             SwitchYellowTL();
         }
-        if(c=='2'){ // night mode = blink yellow
-            BlinkYellowTL();
+        if(c=='4'){ // switch to red
+			SwitchRedTL();
+        }
+        if(c=='5'){ // ckeck if someone is near the trfficlight
+          //entrernung = ultrasonicsensor();
+          /*if(entfernung<=10)
+          {
+			  
+		  }*/
 
         }
+        if(c=='7'){ //Nightmode
+            BlinkYellowTL();
+      }
     }
 }
 
