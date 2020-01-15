@@ -22,6 +22,7 @@ void SPI_SlaveInit(void) {
     // Set MISO output, all others input
     PORT_DIRECTION |= (1 << MISO);
     // Enable SPI
+    // SPCR |= (1 << SPE) | (1 << CPOL) | (1 << CPHA);
     SPCR |= (1 << SPE);
 }
 
@@ -36,7 +37,7 @@ char uart_receive_slave() {
 }
 
 void uart_transmit_string(char *string) {
-    for (int i = 0; strcmp(string[i], '\0') != 0; i++) {
+    for (int i = 0; string[i] != 0; i++) {
         uart_transmit(string[i]);
     }
 }
@@ -51,14 +52,17 @@ void uart_transmit_string(char *string) {
 }*/
 
 char SPI_SlaveReceive(char toMaster) {
-	SPDR = toMaster;
+	 SPDR = toMaster;
     // Wait for reception complete
     // SPI Status Reg & 1<<SPI Interrupt Flag
     if (!(SPSR & (1 << SPIF))){
     // Return data register
-    return SPDR;
+			
+		
+		return SPDR;
 	}else{
-		return 0;
+		return 0;		
+
 	}	
 }
 
@@ -101,31 +105,56 @@ int main() {
     uart_transmit_string("I bims der Slave\n\r");
     SPI_SlaveInit();
 	char c = 'X';
-	SwitchRedPL();
+	uint8_t status=0;
+	uint16_t distance;
+	//SwitchRedPL();
 	TCCR0B =3; 	//b prescaler 64 -> 4µs tick time, 250 ticks == 1ms
 	TCNT0= 231; 	//25 ticks bis zum overflow
 	TIMSK0=1; 	// enable timer 1 overflow interrupts
 	sei();    	//	enable interrupts (globally)
+	char s = 'a';
     while (1) {
-		ultrasonicsensor();
-        c = SPI_SlaveReceive(c);
-        uart_sendstring("reveived");
-        uart_transmit_slave(c);
-        uart_transmit_string("\n\r");
+		/*char s=SPI_SlaveReceive(status);
+        if(s!=0){
+			uart_sendstring("received:");
+			uart_transmit_slave(s);
+			uart_transmit_string("\n\r");
+           c = s;
+		}*/
+		s=SPI_SlaveReceive(s);
+		uart_sendstring("received:");
+		uart_transmit_slave(s);
+		uart_transmit_string("\n\r");
         
         //logik for traffic lights - the intepretation of the cmds of the master
-        if(c=='3'){// Switch to green pedestrian traffic light
+       /* if(c=='3'){// Switch to green pedestrian traffic light
             SwitchGreenPL();
-			ultrasonicsensor();
-        } 
+			frequenz=6;
+			
+        } */
+        if(c==1){
+			BlinkGreenPL();
+		}
         if(c=='4'){// Switch to red pedestrian traffic light
             SwitchRedPL();
-            frequenz=6;
+       		//distance = ultrasonicsensor();
+			/*if(distance <= 10){ status=1
+				c= SPI_SlaveReceive(distance+48); //send a char to master to know that a person is waiting
+				
+				}*/
         }
         
         if(c=='2'){ // night mode = blink yellow pkw traffic light
-			NoLights();
+			//NoLights();
+			
+			SwitchGreenPL();
         }
+        if(c==5){
+			//check if someone is near the traffic light
+			//if true,return 6
+		}
+		if()
+        
     }
 }
 

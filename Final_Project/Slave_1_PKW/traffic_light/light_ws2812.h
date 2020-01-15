@@ -83,6 +83,7 @@ void SwitchRedTL();
 void SwitchGreenTL();
 void SwitchYellowTL();
 void BlinkYellowTL();
+void BlinkGreenTL();
 
 
 //EDtion's end

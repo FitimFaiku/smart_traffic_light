@@ -6,7 +6,7 @@ void init_uart(uint32_t baudrate);
 
 void uart_transmit (uint8_t c);
 
-uart_receive ();
+char uart_receive ();
 
 uint8_t uart_receive_nb (uint8_t * received);
 

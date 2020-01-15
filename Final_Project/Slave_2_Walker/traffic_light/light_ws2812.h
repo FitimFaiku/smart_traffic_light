@@ -84,6 +84,7 @@ void SwitchGreenPL();
 void SwitchYellowTL();
 void BlinkYellowTL();
 void NoLights();
+void BlinkGreenPL();
 
 //EDtion's end
 
