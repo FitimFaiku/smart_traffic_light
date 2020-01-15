@@ -172,7 +172,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
         SS_UNSELECT_SLAVE_1
     }
 
-    if(counter_delay_ms==19*delay_for_communication_between_traffic_cycles_ms*3 && is_cycling_traffic_light_cars_green){
+    if(counter_delay_ms==19*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_cars_green){
         //see -> 2) Switch to Green <b>Cars -- Slave 1</b> Traffic Light
         SS_SELECT_SLAVE_1
         //_delay_ms(100);
