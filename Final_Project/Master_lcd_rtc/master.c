@@ -37,7 +37,7 @@
 #define SS_UNSELECT_SLAVE_2 PORT_VALUE_SLAVE |= (1 << SS_SLAVE_2);
 #define SS_SELECT_SLAVE_2 PORT_VALUE_SLAVE &= ~(1 << SS_SLAVE_2);
 
-static int16_t delay_for_communication_between_traffic_cycles_ms = 500;
+static int16_t delay_for_communication_between_traffic_cycles_ms = 50;
 
 static volatile char next_state = '0';
 static int16_t counter_delay_ms=0;
@@ -72,8 +72,8 @@ void do_action();
 void SPI_MasterInit(void) {
     // Set MOSI and SCK output, all others input
     PORT_DIRECTION |= (1 << MOSI) | (1 << SCK) | (1<<SS);
-
     PORT_DIRECTION_SLAVE |= (1<<SS_SLAVE_1) | (1<<SS_SLAVE_2);
+    PORT_VALUE_SLAVE |= (1<<SS_SLAVE_1) | (1<<SS_SLAVE_2);
     // Enable SPI, Master, set clock rate fck/16
     SPCR |= (1 << SPE) | (1 << MSTR) | (1 << SPR0) | (1 << SPR1);
 }
@@ -140,46 +140,63 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
     static uint8_t menueopencounter=0, cnt_ms=0,cnt_ms_ten=0, cnt_s=0, cnt_min=26; // gloabl lifetime, local visibillity Counter for miliseconds
     TCNT0 = 6; // counter auf 6 --> jede 256-6= 250 ticks --> 1 ms
     counter_delay_ms++;
+    // SS_SELECT_SLAVE_1
+    //_delay_ms(100);
+    // uint8_t slaveValue = SPI_MasterTransmit('3');
+    // uart_transmit(slaveValue + 48);
+    // SS_UNSELECT_SLAVE_1
     
-    // $$$$$$$$$$$$$$$$ Anfang check
+    /*SS_SELECT_SLAVE_1
+    uint8_t slaveValue = SPI_MasterTransmit('x');
+    SS_UNSELECT_SLAVE_1
+    uart_transmit(slaveValue);*/
+   
 
+    // $$$$$$$$$$$$$$$$ Anfang check
 
     //Part1
     if(counter_delay_ms==delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_cars_green){
         // see -> 1) Blink <b>Walker - Slave 2</b> Traffic Light Green
         SS_SELECT_SLAVE_2
         //_delay_ms(delay_for_communication_between_traffic_cycles_ms);
-        SPI_MasterTransmit('1');
-        uart_transmit_string("1. Gesendet: Blink <b>Walkers</b> Traffic Light Green\n\r");
+        uint8_t slaveValue = SPI_MasterTransmit('1');
         SS_UNSELECT_SLAVE_2
+        uart_transmit(slaveValue);
+        uart_transmit_string(": 1. Gesendet: Blink <b>Walkers</b> Traffic Light Green\n\r");
     }
 
     if(counter_delay_ms==11*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_cars_green){
         // see -> 4) Switch to Red <b>Walker - Slave 2</b> Traffic Light
         SS_SELECT_SLAVE_2
         //_delay_ms(delay_for_communication_between_traffic_cycles_ms);
-        SPI_MasterTransmit('4');
-        uart_transmit_string("4. Gesendet: Switch to Red <b>Walkers</b> Traffic Light \n\r");
+        uint8_t slaveValue = SPI_MasterTransmit('4');
         SS_UNSELECT_SLAVE_2
+        uart_transmit(slaveValue);
+        uart_transmit_string(": 4. Gesendet: Switch to Red <b>Walkers</b> Traffic Light \n\r");
+        
     }
 
     if(counter_delay_ms==17*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_cars_green){
         // see -> 3) Switch to Yellow <b>Cars -- Slave 1</b> Traffic Light
         SS_SELECT_SLAVE_1
         //_delay_ms(100);
-        SPI_MasterTransmit('3');
-        uart_transmit_string("3. Gesendet Switch to Yellow <b>Cars</b> Traffic Light \n\r");
+        uint8_t slaveValue = SPI_MasterTransmit('3');
         SS_UNSELECT_SLAVE_1
+        uart_transmit(slaveValue);
+        uart_transmit_string(": 3. Gesendet Switch to Yellow <b>Cars</b> Traffic Light \n\r");
+        
     }
 
     if(counter_delay_ms==27*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_cars_green){
         //see -> 2) Switch to Green <b>Cars -- Slave 1</b> Traffic Light
         SS_SELECT_SLAVE_1
         //_delay_ms(100);
-        SPI_MasterTransmit('2');
-        uart_transmit_string("2. Gesendet: Switch to Green <b>Cars</b> Traffic Light \n\r");
+        uint8_t slaveValue = SPI_MasterTransmit('2');
+        SS_UNSELECT_SLAVE_1
+        uart_transmit(slaveValue);
+        uart_transmit_string(": 2. Gesendet: Switch to Green <b>Cars</b> Traffic Light \n\r");
         is_traffic_light_cars_red = false;
-        SS_UNSELECT_SLAVE_1 
+         
         is_cycling_traffic_light_cars_green= false;
         next_state = '3';
         counter_to_do_action_seconds = 0;
@@ -190,17 +207,21 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
         // see -> 10) Blink <b>Cars -- Slave 1</b> Traffic Light Green
         SS_SELECT_SLAVE_1
         //_delay_ms(100);
-        SPI_MasterTransmit('1');
-        uart_transmit_string("1. Gesendet Blink <b>Cars</b> Traffic Light \n\r");
+        uint8_t slaveValue = SPI_MasterTransmit('1');
         SS_UNSELECT_SLAVE_1
+        uart_transmit(slaveValue);
+        uart_transmit_string(": 1. Gesendet Blink <b>Cars</b> Traffic Light \n\r");
+        
     }
     if(counter_delay_ms==11*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_walkers_green){
         // see -> 3) Switch to Yellow <b>Cars -- Slave 1</b> Traffic Light
         SS_SELECT_SLAVE_1
         //_delay_ms(100);
-        SPI_MasterTransmit('3');
-        uart_transmit_string("3. Gesendet: Switch to Yellow <b>Cars</b> Traffic Light \n\r");
+        uint8_t slaveValue = SPI_MasterTransmit('3');
         SS_UNSELECT_SLAVE_1
+        uart_transmit(slaveValue);        
+        uart_transmit_string(": 3. Gesendet: Switch to Yellow <b>Cars</b> Traffic Light \n\r");
+        
     }
 
     if(counter_delay_ms==21*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_walkers_green){
@@ -208,19 +229,22 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
     
         SS_SELECT_SLAVE_1
         //_delay_ms(100);
-        SPI_MasterTransmit('4');
-        uart_transmit_string("4. Gesendet: Switch to Red <b>Cars</b> Traffic Light \n\r");
-        is_traffic_light_cars_red = true;
+        uint8_t slaveValue = SPI_MasterTransmit('4');
         SS_UNSELECT_SLAVE_1
+        uart_transmit(slaveValue);
+        uart_transmit_string(": 4. Gesendet: Switch to Red <b>Cars</b> Traffic Light \n\r");
+        is_traffic_light_cars_red = true;
     }
 
     if(counter_delay_ms==29*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_walkers_green){
         //see ->2) Switch to Green <b>Walkers -- Slave 2</b> Traffic Light
         SS_SELECT_SLAVE_2
         //_delay_ms(100);
-        SPI_MasterTransmit('2');
-        uart_transmit_string("2. Gesendet: Switch to Green <b>Walkers</b> Traffic Light \n\r");
+        uint8_t slaveValue = SPI_MasterTransmit('2');
         SS_UNSELECT_SLAVE_2
+        uart_transmit(slaveValue);
+        uart_transmit_string(": 2. Gesendet: Switch to Green <b>Walkers</b> Traffic Light \n\r");
+        
 
         next_state = '4'; // Next is cars schould get green
         is_cycling_traffic_light_walkers_green=false;
@@ -237,7 +261,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
         counter_to_do_action_seconds++;
         uart_transmit_string("Updating seconds ... \n\r");
 
-        // Every second we check if maybe someone is near the Red Traffic Light slave -> master command 6 or 7 
+       /* // Every second we check if maybe someone is near the Red Traffic Light slave -> master command 6 or 7 
         check_slave_message_should_action();
         if(cnt_s>=60){
             cnt_min++;
@@ -254,9 +278,10 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
             //uart_transmit(next_state);
             //uart_transmit_string("\n\r");
             //setTime(menueopencounter, current_hour,cnt_min,cnt_s);
-        }
+        }*/
         cnt_ms_ten=0;
         //DS13xx_Read_CLK_Registers();
+        
     }
     
 }
@@ -382,9 +407,9 @@ void init(){
 
 void init_interrupts(){
      //Enable interrupts
-     TCCR0B = 3; // prescaler 64 -> 4us tick time, 250 ticks -- 1 ms
+     TCCR0B |= (1<<CS11) | (1<<CS10); // prescaler 64 -> 4us tick time, 250 ticks -- 1 ms
      TIMSK0 = 1 ; // enablen der overflow interrupts
-     TCNT0 = 6; // counter auf 6 --> jede 256-6=50 ticks --> 1 ms
+     TCNT0 = 6; // counter auf 6 --> jede 256-6=250 ticks --> 1 ms
      sei(); //enable interrupts(globally)
 }
 

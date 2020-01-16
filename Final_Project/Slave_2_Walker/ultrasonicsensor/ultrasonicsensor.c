@@ -75,6 +75,7 @@ int ultrasonicsensor(void)
 		
 		//Entfernung ermitteln durch messung der high time am Echo-
 		while((PIND&(1<<6))==0);
+		uart_transmit('a');
 		while((PIND&(1<<6))!=0){
 			messung++;
 			_delay_us(1); 

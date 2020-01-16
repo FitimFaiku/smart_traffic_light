@@ -19,7 +19,7 @@ void SPI_SlaveInit(void) {
     // Set MISO output, all others input
     PORT_DIRECTION |= (1 << MISO);
     // Enable SPI
-    SPCR |= (1 << SPE);
+    SPCR |= (1 << SPE) | (1<< SPIE);
 }
 
 void uart_transmit_slave(char character) {
@@ -57,18 +57,9 @@ void uart_transmit_string(char *string) {
      
 }*/
 
-char SPI_SlaveReceive(char toMaster) {
+void SPI_SlaveReceive(char toMaster) {
 	SPDR = toMaster;
-    // Wait for reception complete
-    // SPI Status Reg & 1<<SPI Interrupt Flag
-    if (!(SPSR & (1 << SPIF))){
-    // Return data register
-    return SPDR;
-	}else{
-		return 0;
-	}	
 }
-
 
 
 void uart_init(uint32_t baudrate) {
@@ -88,23 +79,37 @@ void uart_init(uint32_t baudrate) {
     // UCSR0B |= (1<<RXCIE0); we do not use interrupts by now..
 }
 
+volatile char s = 0;
+uint8_t sending = 0;
+ISR(SPI_STC_vect){
+	uart_transmit_string("SPI\n\r");
+	sending = 0;
+	s = SPDR;
+}
+
 int main() {
-	uint8_t status=0;
+	uint8_t status='0';
     uart_init(115200);
     uart_transmit_string("I bims der Slave\n\r");
+	uint16_t entfrernung;
+	sei();
 	
-		
     SPI_SlaveInit();
 	char c = 'X';
 	SwitchGreenTL();
     while (1) {
-		char s=SPI_SlaveReceive(status);
-	if(s!=0){
-		uart_sendstring("reveived");
-        uart_transmit_slave(c);
-        uart_transmit_string("\n\r");
-        c=s;
-	}
+		if(!sending) {
+			sending = 1;
+			SPI_SlaveReceive(status); // Send
+		}
+		
+		
+		if(s!=0){
+			uart_sendstring("reveived");
+			uart_transmit_slave(c);
+			uart_transmit_string("\n\r");
+			c=s;
+		}
         
         //logik for traffic lights - the intepretation of the cmds of the master
         if(c=='1'){// blink green
@@ -112,20 +117,21 @@ int main() {
         }
         if(c=='2'){// Switch to green
             SwitchGreenTL();
+            status=0;
         }
         if(c=='3'){ // Switch to yellow
             SwitchYellowTL();
         }
         if(c=='4'){ // switch to red
-			SwitchRedTL();
+		SwitchRedTL();
+		ultrasonicsensor();
+          if(entfrernung<=10){
+			status='6';
+		  }
+
         }
         if(c=='5'){ // ckeck if someone is near the trfficlight
-          //entrernung = ultrasonicsensor();
-          /*if(entfernung<=10)
-          {
-			  
-		  }*/
-
+          
         }
         if(c=='7'){ //Nightmode
             BlinkYellowTL();
