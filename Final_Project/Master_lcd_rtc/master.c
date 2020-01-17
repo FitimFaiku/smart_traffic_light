@@ -38,6 +38,13 @@
 #define SS_SELECT_SLAVE_2 PORT_VALUE_SLAVE &= ~(1 << SS_SLAVE_2);
 
 static int16_t delay_for_communication_between_traffic_cycles_ms = 50;
+static int16_t delay_before_first_cycle = 500;
+static int16_t delay_between_green_blink_and_orange_or_red = 6000;
+static int16_t delay_between_orange_and_red_or_green = 5000;
+static int16_t delay_between_one_slave_red_and_other_start = 3000;
+
+static uint8_t counter_cycle = 0;
+
 
 static volatile char next_state = '0';
 static int16_t counter_delay_ms=0;
@@ -154,104 +161,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
 
     // $$$$$$$$$$$$$$$$ Anfang check
 
-    //Part1
-    if(counter_delay_ms==delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_cars_green){
-        // see -> 1) Blink <b>Walker - Slave 2</b> Traffic Light Green
-        SS_SELECT_SLAVE_2
-        //_delay_ms(delay_for_communication_between_traffic_cycles_ms);
-        uint8_t slaveValue = SPI_MasterTransmit('1');
-        SS_UNSELECT_SLAVE_2
-        uart_transmit(slaveValue);
-        uart_transmit_string(": 1. Gesendet: Blink <b>Walkers</b> Traffic Light Green\n\r");
-    }
-
-    if(counter_delay_ms==11*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_cars_green){
-        // see -> 4) Switch to Red <b>Walker - Slave 2</b> Traffic Light
-        SS_SELECT_SLAVE_2
-        //_delay_ms(delay_for_communication_between_traffic_cycles_ms);
-        uint8_t slaveValue = SPI_MasterTransmit('4');
-        SS_UNSELECT_SLAVE_2
-        uart_transmit(slaveValue);
-        uart_transmit_string(": 4. Gesendet: Switch to Red <b>Walkers</b> Traffic Light \n\r");
-        
-    }
-
-    if(counter_delay_ms==17*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_cars_green){
-        // see -> 3) Switch to Yellow <b>Cars -- Slave 1</b> Traffic Light
-        SS_SELECT_SLAVE_1
-        //_delay_ms(100);
-        uint8_t slaveValue = SPI_MasterTransmit('3');
-        SS_UNSELECT_SLAVE_1
-        uart_transmit(slaveValue);
-        uart_transmit_string(": 3. Gesendet Switch to Yellow <b>Cars</b> Traffic Light \n\r");
-        
-    }
-
-    if(counter_delay_ms==27*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_cars_green){
-        //see -> 2) Switch to Green <b>Cars -- Slave 1</b> Traffic Light
-        SS_SELECT_SLAVE_1
-        //_delay_ms(100);
-        uint8_t slaveValue = SPI_MasterTransmit('2');
-        SS_UNSELECT_SLAVE_1
-        uart_transmit(slaveValue);
-        uart_transmit_string(": 2. Gesendet: Switch to Green <b>Cars</b> Traffic Light \n\r");
-        is_traffic_light_cars_red = false;
-         
-        is_cycling_traffic_light_cars_green= false;
-        next_state = '3';
-        counter_to_do_action_seconds = 0;
-    }
-
-    //Part 2
-    if(counter_delay_ms==delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_walkers_green){
-        // see -> 10) Blink <b>Cars -- Slave 1</b> Traffic Light Green
-        SS_SELECT_SLAVE_1
-        //_delay_ms(100);
-        uint8_t slaveValue = SPI_MasterTransmit('1');
-        SS_UNSELECT_SLAVE_1
-        uart_transmit(slaveValue);
-        uart_transmit_string(": 1. Gesendet Blink <b>Cars</b> Traffic Light \n\r");
-        
-    }
-    if(counter_delay_ms==11*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_walkers_green){
-        // see -> 3) Switch to Yellow <b>Cars -- Slave 1</b> Traffic Light
-        SS_SELECT_SLAVE_1
-        //_delay_ms(100);
-        uint8_t slaveValue = SPI_MasterTransmit('3');
-        SS_UNSELECT_SLAVE_1
-        uart_transmit(slaveValue);        
-        uart_transmit_string(": 3. Gesendet: Switch to Yellow <b>Cars</b> Traffic Light \n\r");
-        
-    }
-
-    if(counter_delay_ms==21*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_walkers_green){
-        // see -> 4) Switch to Red <b>Cars -- Slave 1</b> Traffic Light
     
-        SS_SELECT_SLAVE_1
-        //_delay_ms(100);
-        uint8_t slaveValue = SPI_MasterTransmit('4');
-        SS_UNSELECT_SLAVE_1
-        uart_transmit(slaveValue);
-        uart_transmit_string(": 4. Gesendet: Switch to Red <b>Cars</b> Traffic Light \n\r");
-        is_traffic_light_cars_red = true;
-    }
-
-    if(counter_delay_ms==29*delay_for_communication_between_traffic_cycles_ms && is_cycling_traffic_light_walkers_green){
-        //see ->2) Switch to Green <b>Walkers -- Slave 2</b> Traffic Light
-        SS_SELECT_SLAVE_2
-        //_delay_ms(100);
-        uint8_t slaveValue = SPI_MasterTransmit('2');
-        SS_UNSELECT_SLAVE_2
-        uart_transmit(slaveValue);
-        uart_transmit_string(": 2. Gesendet: Switch to Green <b>Walkers</b> Traffic Light \n\r");
-        
-
-        next_state = '4'; // Next is cars schould get green
-        is_cycling_traffic_light_walkers_green=false;
-        counter_to_do_action_seconds = 0;
-    }
-
-    // $$$$$$$$$$$$$$$$ Ende check
     if(cnt_ms++>=100){
 		cnt_ms_ten++;
 		cnt_ms=0;
@@ -261,7 +171,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
         counter_to_do_action_seconds++;
         uart_transmit_string("Updating seconds ... \n\r");
 
-       /* // Every second we check if maybe someone is near the Red Traffic Light slave -> master command 6 or 7 
+       // Every second we check if maybe someone is near the Red Traffic Light slave -> master command 6 or 7 
         check_slave_message_should_action();
         if(cnt_s>=60){
             cnt_min++;
@@ -278,7 +188,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
             //uart_transmit(next_state);
             //uart_transmit_string("\n\r");
             //setTime(menueopencounter, current_hour,cnt_min,cnt_s);
-        }*/
+        }
         cnt_ms_ten=0;
         //DS13xx_Read_CLK_Registers();
         
@@ -289,13 +199,17 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
 void set_traffic_light_cars_red_and_walkers_green() {
     // Switch Yellow Car -(?msTODO)-> Switch Red Car -(?msTODO)->Switch green for Walkers Traffic Light
     counter_delay_ms=0;
+    counter_cycle=0;
     is_cycling_traffic_light_walkers_green = true;
+    uart_transmit_string("is_cycling_traffic_light_walkers_green setting true \n\r");
 
 }
 
 void set_traffic_light_walkers_red_and_cars_green() {
     counter_delay_ms = 0; 
+    counter_cycle=0;
     is_cycling_traffic_light_cars_green = true;
+    uart_transmit_string("is_cycling_traffic_light_cars_green setting true \n\r");
     // Switch Red Walkers traffic Light -(?msTODO)-> Switch Yellow Cars Traffic Light -(?msTODO)->Switch green for Cars Traffic Light
 }
 
@@ -303,36 +217,51 @@ void check_slave_message_should_action(){
 
     char slave_message = '0';
 
-    uint8_t slave_message_int = 0;
+    uint8_t slave_message_pkw = 0;
+    uint8_t slave_message_walker = 0;
     
      // When Walkers is waiting and currently has red TODO slave_message_int+48
-    if(1 == 2 && is_day_mode && next_state=='3' && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
+    if(is_day_mode && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
+        uart_transmit_string("5. Gesendet: Check if Someone is near the Traffic Light master --> slave request \n\r");
         //see --> 5) Check if Someone is near the <b>Walkers -- Slave 2</b> Traffic Light master --> slave request
         SS_SELECT_SLAVE_2
         //_delay_ms(100);
-        slave_message_int = SPI_MasterTransmit('5');
-        uart_transmit_string("5. Gesendet: Check if Someone is near the Traffic Light master --> slave request \n\r");
+        slave_message_walker = SPI_MasterTransmit('5');
         SS_UNSELECT_SLAVE_2
 
-        // TODO check slave message
+        SS_SELECT_SLAVE_1
+        //_delay_ms(100);
+        slave_message_pkw = SPI_MasterTransmit('5');
+        SS_UNSELECT_SLAVE_1
+
+        if(is_traffic_light_cars_red &&  slave_message_pkw == 1 && slave_message_walker ==0 ){
+            uart_transmit_string("Do action switch to next cycle \n\r");
+            should_action = true;
+        }
+        if(!is_traffic_light_cars_red && slave_message_pkw == 0 && slave_message_walker == 1){
+            uart_transmit_string("Do action switch to next cycle \n\r");
+            should_action = true;
+        }
 
     }
+    /*
     // When Car is waiting and currently has red TODO slave_message_int+48
     if(is_day_mode && next_state == '4' && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
         //see --> 5) Check if Someone is near the <b>Cars -- Slave 1</b> Traffic Light master --> slave request
         SS_SELECT_SLAVE_1
         //_delay_ms(100);
         slave_message_int = SPI_MasterTransmit('5');
+        SS_UNSELECT_SLAVE_1
         uart_transmit_string("5. Gesendet: Check if Someone is near the Traffic Light master. \n\r");
         if(slave_message != 0) {
 			uart_transmit_string("Got something else than zero \n\r");
 			uart_transmit(slave_message+48);
 		}
 		
-        SS_UNSELECT_SLAVE_1
+        
 
         // TODO check slave message
-    }
+    }*/
 }
 
 void do_action(void) {
@@ -426,6 +355,124 @@ void check_current_state_and_do_action_if_needed(){
     }
 }
 
+void execute_state_mashine_cars_green(){ 
+    if(is_cycling_traffic_light_cars_green){
+        if(counter_delay_ms==delay_before_first_cycle && counter_cycle==0){
+        // see -> 1) Blink <b>Walker - Slave 2</b> Traffic Light Green
+        SS_SELECT_SLAVE_2
+        //_delay_ms(delay_for_communication_between_traffic_cycles_ms);
+        uint8_t slaveValue = SPI_MasterTransmit('1');
+        SS_UNSELECT_SLAVE_2
+        counter_cycle++;
+        counter_delay_ms=0;
+        uart_transmit(slaveValue);
+        uart_transmit_string(": 1. Gesendet: Blink <b>Walkers</b> Traffic Light Green\n\r");
+		}
+
+		if(counter_delay_ms==delay_between_green_blink_and_orange_or_red && counter_cycle==1){
+			// see -> 4) Switch to Red <b>Walker - Slave 2</b> Traffic Light
+			SS_SELECT_SLAVE_2
+			//_delay_ms(delay_for_communication_between_traffic_cycles_ms);
+			uint8_t slaveValue = SPI_MasterTransmit('4');
+			SS_UNSELECT_SLAVE_2
+			counter_cycle++;
+			counter_delay_ms=0;
+			uart_transmit(slaveValue);
+			uart_transmit_string(": 4. Gesendet: Switch to Red <b>Walkers</b> Traffic Light \n\r");
+			
+			
+		}
+
+		if(counter_delay_ms==delay_between_one_slave_red_and_other_start && counter_cycle==2){
+			// see -> 3) Switch to Yellow <b>Cars -- Slave 1</b> Traffic Light
+			SS_SELECT_SLAVE_1
+			//_delay_ms(100);
+			uint8_t slaveValue = SPI_MasterTransmit('3');
+			SS_UNSELECT_SLAVE_1
+			counter_cycle++;
+			counter_delay_ms=0;
+			uart_transmit(slaveValue);
+			uart_transmit_string(": 3. Gesendet Switch to Yellow <b>Cars</b> Traffic Light \n\r");
+			
+		}
+		if(counter_delay_ms==delay_between_orange_and_red_or_green && counter_cycle==3){
+			//see -> 2) Switch to Green <b>Cars -- Slave 1</b> Traffic Light
+			SS_SELECT_SLAVE_1
+			//_delay_ms(100);
+			uint8_t slaveValue = SPI_MasterTransmit('2');
+			SS_UNSELECT_SLAVE_1
+
+			// Reset values because we reached end of process
+			is_traffic_light_cars_red = false;
+			is_cycling_traffic_light_cars_green= false;
+			counter_cycle=0; // reset counter because end
+			counter_delay_ms=0;
+			uart_transmit(slaveValue);
+			uart_transmit_string(": 2. Gesendet: Switch to Green <b>Cars</b> Traffic Light \n\r");
+			next_state = '3';
+			counter_to_do_action_seconds = 0;
+		}
+    }
+}
+
+void execute_state_mashine_walkers_green(){
+    //Part 2
+    if(is_cycling_traffic_light_walkers_green){
+		if(counter_delay_ms==delay_before_first_cycle && counter_cycle==0 ){
+			uart_transmit_string("!!!!!!!TRUE cFirst cycle is executed !!!!!\n\r");
+			// see -> 1) Blink <b>Cars -- Slave 1</b> Traffic Light Green
+			SS_SELECT_SLAVE_1
+			//_delay_ms(100);
+			uint8_t slaveValue = SPI_MasterTransmit('1');
+			SS_UNSELECT_SLAVE_1
+			counter_cycle++;
+			counter_delay_ms=0;
+			uart_transmit(slaveValue);
+			uart_transmit_string(": 1. Gesendet Blink <b>Cars</b> Traffic Light \n\r");
+		}
+		if(counter_delay_ms==delay_between_green_blink_and_orange_or_red && counter_cycle==1){
+			// see -> 3) Switch to Yellow <b>Cars -- Slave 1</b> Traffic Light
+			SS_SELECT_SLAVE_1
+			//_delay_ms(100);
+			uint8_t slaveValue = SPI_MasterTransmit('3');
+			SS_UNSELECT_SLAVE_1
+			counter_cycle++;
+			counter_delay_ms=0;
+			uart_transmit(slaveValue);        
+			uart_transmit_string(": 3. Gesendet: Switch to Yellow <b>Cars</b> Traffic Light \n\r");
+			
+		}
+
+		if(counter_delay_ms==delay_between_orange_and_red_or_green && counter_cycle==2){
+			// see -> 4) Switch to Red <b>Cars -- Slave 1</b> Traffic Light
+			SS_SELECT_SLAVE_1
+			//_delay_ms(100);
+			uint8_t slaveValue = SPI_MasterTransmit('4');
+			SS_UNSELECT_SLAVE_1
+			counter_cycle++;
+			counter_delay_ms=0;
+			uart_transmit(slaveValue);
+			uart_transmit_string(": 4. Gesendet: Switch to Red <b>Cars</b> Traffic Light \n\r");
+			is_traffic_light_cars_red = true;
+		}
+
+		// We do delay_between_one_slave_red_and_other_start+delay_between_orange_and_red_or_green because we dont have a yellow phase in the walkers Traffic light 
+		if(counter_delay_ms==delay_between_one_slave_red_and_other_start && counter_cycle==3){
+			//see ->2) Switch to Green <b>Walkers -- Slave 2</b> Traffic Light
+			SS_SELECT_SLAVE_2
+			//_delay_ms(100);
+			uint8_t slaveValue = SPI_MasterTransmit('2');
+			SS_UNSELECT_SLAVE_2
+			uart_transmit(slaveValue);
+			uart_transmit_string(": 2. Gesendet: Switch to Green <b>Walkers</b> Traffic Light \n\r");
+			is_cycling_traffic_light_walkers_green=false;
+			counter_cycle=0;
+			next_state = '4'; // Next is cars schould get green
+			counter_to_do_action_seconds = 0;
+		}
+	}  
+}
+
 int main() {
     // Init of uart, SS-SPI, SPI_MasterInit, init_DS13xx, LCD_and_SPI_Init, init_volatile_variables,init_interrupts
     init();
@@ -435,6 +482,8 @@ int main() {
     while(1){
         //sleep_mode(); //save power
         check_current_state_and_do_action_if_needed();
+        execute_state_mashine_cars_green();
+        execute_state_mashine_walkers_green();
     }
 }
 
