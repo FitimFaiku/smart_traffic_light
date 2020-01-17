@@ -172,7 +172,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
         uart_transmit_string("Updating seconds ... \n\r");
 
        // Every second we check if maybe someone is near the Red Traffic Light slave -> master command 6 or 7 
-        //check_slave_message_should_action();
+        check_slave_message_should_action();
         if(cnt_s>=60){
             cnt_min++;
             if(cnt_min>=60){
@@ -220,13 +220,20 @@ void check_slave_message_should_action(){
     uint8_t slave_message_int = 0;
     
      // When Walkers is waiting and currently has red TODO slave_message_int+48
-    if(1 == 2 && is_day_mode && next_state=='3' && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
+    if(is_day_mode && next_state=='3' && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
         //see --> 5) Check if Someone is near the <b>Walkers -- Slave 2</b> Traffic Light master --> slave request
         SS_SELECT_SLAVE_2
         //_delay_ms(100);
         slave_message_int = SPI_MasterTransmit('5');
-        uart_transmit_string("5. Gesendet: Check if Someone is near the Traffic Light master --> slave request \n\r");
         SS_UNSELECT_SLAVE_2
+
+        uart_transmit_string("5. Gesendet: Check if Someone is near the Traffic Light master --> slave request \n\r");
+        if(slave_message != 0) {
+			uart_transmit_string("Got something else than zero \n\r");
+			uart_transmit(slave_message+48);
+		}
+        
+        
 
         // TODO check slave message
 
@@ -237,13 +244,14 @@ void check_slave_message_should_action(){
         SS_SELECT_SLAVE_1
         //_delay_ms(100);
         slave_message_int = SPI_MasterTransmit('5');
+        SS_UNSELECT_SLAVE_1
         uart_transmit_string("5. Gesendet: Check if Someone is near the Traffic Light master. \n\r");
         if(slave_message != 0) {
 			uart_transmit_string("Got something else than zero \n\r");
 			uart_transmit(slave_message+48);
 		}
 		
-        SS_UNSELECT_SLAVE_1
+        
 
         // TODO check slave message
     }
