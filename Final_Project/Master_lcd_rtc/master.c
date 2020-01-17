@@ -217,27 +217,34 @@ void check_slave_message_should_action(){
 
     char slave_message = '0';
 
-    uint8_t slave_message_int = 0;
+    uint8_t slave_message_pkw = 0;
+    uint8_t slave_message_walker = 0;
     
      // When Walkers is waiting and currently has red TODO slave_message_int+48
-    if(is_day_mode && next_state=='3' && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
+    if(is_day_mode && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
+        uart_transmit_string("5. Gesendet: Check if Someone is near the Traffic Light master --> slave request \n\r");
         //see --> 5) Check if Someone is near the <b>Walkers -- Slave 2</b> Traffic Light master --> slave request
         SS_SELECT_SLAVE_2
         //_delay_ms(100);
-        slave_message_int = SPI_MasterTransmit('5');
+        slave_message_walker = SPI_MasterTransmit('5');
         SS_UNSELECT_SLAVE_2
 
-        uart_transmit_string("5. Gesendet: Check if Someone is near the Traffic Light master --> slave request \n\r");
-        if(slave_message != 0) {
-			uart_transmit_string("Got something else than zero \n\r");
-			uart_transmit(slave_message+48);
-		}
-        
-        
+        SS_SELECT_SLAVE_1
+        //_delay_ms(100);
+        slave_message_pkw = SPI_MasterTransmit('5');
+        SS_UNSELECT_SLAVE_1
 
-        // TODO check slave message
+        if(is_traffic_light_cars_red &&  slave_message_pkw == 1 && slave_message_walker ==0 ){
+            uart_transmit_string("Do action switch to next cycle \n\r");
+            should_action = true;
+        }
+        if(!is_traffic_light_cars_red && slave_message_pkw == 0 && slave_message_walker == 1){
+            uart_transmit_string("Do action switch to next cycle \n\r");
+            should_action = true;
+        }
 
     }
+    /*
     // When Car is waiting and currently has red TODO slave_message_int+48
     if(is_day_mode && next_state == '4' && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
         //see --> 5) Check if Someone is near the <b>Cars -- Slave 1</b> Traffic Light master --> slave request
@@ -254,7 +261,7 @@ void check_slave_message_should_action(){
         
 
         // TODO check slave message
-    }
+    }*/
 }
 
 void do_action(void) {
