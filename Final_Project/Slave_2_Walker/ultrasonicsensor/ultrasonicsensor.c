@@ -82,10 +82,10 @@ int ultrasonicsensor(void)
 		}
 		messung=messung/48; // /48 um die gemessene Zeit in cm umzurechnen
 		inttostr(messung,entfernung);
-		uart_sendstring(entfernung); 
-		uart_transmit('\r');
-		uart_transmit('\n');
+		//uart_sendstring(entfernung); 
+		//uart_transmit('\r');
+		//uart_transmit('\n');
 		return messung;
 		messung=0;
-		_delay_ms_(10);
+		//_delay_ms_(10);
 }

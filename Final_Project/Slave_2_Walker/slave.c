@@ -1,7 +1,10 @@
 #include "traffic_light/light_ws2812.h"
-#define F_CPU 16000000 
-#include<avr/io.h>
-#include<util/delay.h>
+
+#define F_CPU 16000000
+
+#include <avr/io.h>        // SFR definitions, bit positions etc.
+#include <util/delay.h>   // include delay functions 
+
 #include "ultrasonicsensor/ultrasonicsensor.h"
 #include <avr/interrupt.h>
 #include <string.h>
@@ -15,7 +18,8 @@
 #define MISO 4
 #define MOSI 3
 #define SS   2
-volatile uint8_t frequenz=0;
+
+volatile uint8_t frequenz=6;
 
 
 void SPI_SlaveInit(void) {
@@ -50,19 +54,16 @@ void uart_transmit_string(char *string) {
     // Return data register
     return SPDR;
 }*/
-
+//non blocking
 char SPI_SlaveReceive(char toMaster) {
 	 SPDR = toMaster;
     // Wait for reception complete
     // SPI Status Reg & 1<<SPI Interrupt Flag
     if (!(SPSR & (1 << SPIF))){
     // Return data register
-			
-		
-		return SPDR;
+		return 0;	
 	}else{
-		return 0;		
-
+		return SPDR;	
 	}	
 }
 
@@ -83,6 +84,7 @@ void uart_init(uint32_t baudrate) {
     // for interrupts: enable receive complete interrupt
     // UCSR0B |= (1<<RXCIE0); we do not use interrupts by now..
 }
+
 ISR(TIMER0_OVF_vect) //timer 0 overflow interrupt service routine
 {
 	static uint16_t count1=0,count2=0; //static: global lifetime, local visibility		
@@ -101,60 +103,80 @@ ISR(TIMER0_OVF_vect) //timer 0 overflow interrupt service routine
 
 int main() {
     uart_init(115200);
-    DDRD = (1<<4);
+    DDRD = (1<<4);  		//PD4 is Buzzer
+    DDRB |= (1<<PB4);  	 	// Set MISO output //SPI_SlaveInit();
+	SPCR |= (1<<SPE);       // enable SPI in slave mode
+	
     uart_transmit_string("I bims der Slave\n\r");
-    SPI_SlaveInit();
+    
 	char c = 'X';
-	uint8_t status=0;
+	char status='0';
 	uint16_t distance;
-	//SwitchRedPL();
 	TCCR0B =3; 	//b prescaler 64 -> 4µs tick time, 250 ticks == 1ms
 	TCNT0= 231; 	//25 ticks bis zum overflow
 	TIMSK0=1; 	// enable timer 1 overflow interrupts
-	sei();    	//	enable interrupts (globally)
-	char s = 'a';
+	sei();    	//	enable interrupts (globally)*/
+	//char s = 'a';
+
+	/*SPDR = '0'; 					// set return data to master
+	while(!(SPSR & (1<<SPIF) )); 	// Wait until transmission occurred 
+	uart_transmit_string("first received char:");
+	c=SPDR;
+	uart_transmit_slave(c);  			// output received data from master
+	 */
     while (1) {
-		/*char s=SPI_SlaveReceive(status);
+		char s=SPI_SlaveReceive(status);
         if(s!=0){
 			uart_sendstring("received:");
 			uart_transmit_slave(s);
 			uart_transmit_string("\n\r");
            c = s;
-		}*/
-		c=SPI_SlaveReceive(c);
+		}
+/*		
+		c=SPI_SlaveReceive(status);
+		if (c) {
 		uart_sendstring("received:");
 		uart_transmit_slave(c);
 		uart_transmit_string("\n\r");
-        
+	    } else 	uart_sendstring("c is 0\n\r");
+*/
         //logik for traffic lights - the intepretation of the cmds of the master
-       /* if(c=='3'){// Switch to green pedestrian traffic light
-            SwitchGreenPL();
-			frequenz=6;
-			
-        } */
-        if(c==1){
-			BlinkGreenPL();
+     
+        if(c=='1'){ //blink green befor switching to red
+			BlinkGreenPL()	;
+			frequenz=7;
+			status= '0';
 		}
         if(c=='4'){// Switch to red pedestrian traffic light
             SwitchRedPL();
-       		//distance = ultrasonicsensor();
-			/*if(distance <= 10){ status=1
-				c= SPI_SlaveReceive(distance+48); //send a char to master to know that a person is waiting
-				
-				}*/
-        }
-        
-        if(c=='2'){ // night mode = blink yellow pkw traffic light
-			//NoLights();
+       		distance = ultrasonicsensor();
+			if(distance <= 5){
+				uart_sendstring("dist 1\n\r"); 
+				status= '1';
+				//c= SPI_SlaveReceive(distance+48); //send a char to master to know that a person is waiting
+			}else{
+				status= '0';
+				uart_sendstring("dist 0\n\r"); 
+			}
 			
-			SwitchGreenPL();
+			//frequenz=0;
         }
-        if(c==5){
+        if(c=='2'){ //Switch to green pedestrian traffic light
+			frequenz=5;
+			SwitchGreenPL();
+			status= '0';
+        }
+        /*if(c== 0){ //TODO: REMOVE THIS STATUS BCZ SLAVE ANWAY WILL SEND BACK A CHAR 
 			//check if someone is near the traffic light
 			//if true,return 6
-		}
-		//if(c==7){} // gelb blink
-        
+			status= '0';
+		}*/
+		//if(c==7){
+			// gelb blink
+		//} 
+		
+		//TODO: implement night mood -> noLights()
+		// night mode = blink yellow pkw traffic light
     }
 }
 

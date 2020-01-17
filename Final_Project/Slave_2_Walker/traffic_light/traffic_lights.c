@@ -33,12 +33,12 @@
 struct cRGB rgb[23];
 
 void SwitchRedPL(){
-	for (uint8_t i = 0; i<12; i++){
+	for (uint8_t i = 12; i<24; i++){
 		rgb[i].r = Rot;
 		rgb[i].g = green_0;
 		rgb[i].b = blue_0;
 	}
-	for (uint8_t i = 12; i<24; i++){
+	for (uint8_t i = 0; i<12; i++){
 		rgb[i].r = rot_0;
 		rgb[i].g = green_0;
 		rgb[i].b = blue_0;
@@ -46,12 +46,12 @@ void SwitchRedPL(){
 	ws2812_setleds(rgb,24); //rot
 }
 void SwitchGreenPL(){
-	for (uint8_t i = 0; i<12; i++){
+	for (uint8_t i = 12; i<24; i++){
 				rgb[i].r = rot_0;
 				rgb[i].g = green_0;
 				rgb[i].b = blue_0;
 			}
-			for (uint8_t i = 12; i<24; i++){
+			for (uint8_t i = 0; i<12; i++){
 				rgb[i].r = rot_0;
 				rgb[i].g = Green;
 				rgb[i].b = blue_0;
@@ -59,96 +59,31 @@ void SwitchGreenPL(){
 			ws2812_setleds(rgb,24); // green
 }
 void BlinkGreenPL(){
-	for (uint8_t i = 0; i<12; i++){
-				rgb[i].r = rot_0;
-				rgb[i].g = green_0;
-				rgb[i].b = blue_0;
-			}
-			for (uint8_t i = 12; i<24; i++){
-				rgb[i].r = rot_0;
-				rgb[i].g = Green;
-				rgb[i].b = blue_0;
-			}
-			ws2812_setleds(rgb,24); // blink green
-			_delay_ms(1000);
-			for (uint8_t i = 12; i<24; i++){
-				rgb[i].r = rot_0;
-				rgb[i].g = green_0;
-				rgb[i].b = blue_0;
-			}
-			ws2812_setleds(rgb,24); //green ausschalten
-			_delay_ms(1000);
-}
-void SwitchYellowTL(){
-			for (uint8_t i =0; i<11; i++){
-				rgb[i].r = rot_0;
-				rgb[i].g = green_0;
-				rgb[i].b = blue_0;
-			}
-			for (uint8_t i = 11; i<23; i++){
-				rgb[i].r = Rot;
-				rgb[i].g = Green;
-				rgb[i].b = blue_0;
-			}
-			for (uint8_t i = 23; i<35; i++){
-				rgb[i].r = rot_0;
-				rgb[i].g = green_0;
-				rgb[i].b = blue_0;
-			}
-			ws2812_setleds(rgb,35); //gelb
-}
-void BlinkYellowTL(){
-	for (uint8_t i =0; i<11; i++){
+	static uint16_t counter=0;
+	counter++;
+	if (counter >= 2000) counter=0;
+	if (counter < 1000) {
+		for (uint8_t i = 12; i<24; i++){
 			rgb[i].r = rot_0;
 			rgb[i].g = green_0;
 			rgb[i].b = blue_0;
 		}
-		for (uint8_t i = 11; i<23; i++){
-			rgb[i].r = Rot;
-			rgb[i].g = Green;
-			rgb[i].b = blue_0;
-		}
-		for (uint8_t i = 23; i<35; i++){
-			rgb[i].r = rot_0;
-			rgb[i].g = green_0;
-			rgb[i].b = blue_0;
-		}
-		ws2812_setleds(rgb,35); //gelb
-		_delay_ms(1000);
-		for (uint8_t i = 11; i<23; i++){
-			rgb[i].r = rot_0;
-			rgb[i].g = green_0;
-			rgb[i].b = blue_0;
-		}
-		ws2812_setleds(rgb,35); // gelb ausschalten
-		_delay_ms(1000);
-}
-void BlinkGreenTL(){
-	for (uint8_t i =0; i<11; i++){
-			rgb[i].r = rot_0;
-			rgb[i].g = green_0;
-			rgb[i].b = blue_0;
-		}
-		for (uint8_t i = 11; i<23; i++){
-			rgb[i].r = rot_0;
-			rgb[i].g = green_0;
-			rgb[i].b = blue_0;
-		}
-		for (uint8_t i = 23; i<35; i++){
+		for (uint8_t i = 0; i<12; i++){
 			rgb[i].r = rot_0;
 			rgb[i].g = Green;
 			rgb[i].b = blue_0;
 		}
-		ws2812_setleds(rgb,35); //gelb
-		_delay_ms(1000);
-		for (uint8_t i = 11; i<23; i++){
+	}
+	else {
+		for (uint8_t i = 0; i<12; i++){
 			rgb[i].r = rot_0;
 			rgb[i].g = green_0;
-			rgb[i].b = blue_0;
+			rgb[i].b = blue_0;	
 		}
-		ws2812_setleds(rgb,35); // gelb ausschalten
-		_delay_ms(1000);
+	}
+	ws2812_setleds(rgb,24); //green ausschalten
 }
+
 void NoLights(){
 	for (uint8_t i = 0; i<24; i++){
 		rgb[i].r = rot_0;
@@ -156,7 +91,6 @@ void NoLights(){
 		rgb[i].b = blue_0;
 	}
 	ws2812_setleds(rgb,24); // gelb ausschalten
-	 
 }
 
 
