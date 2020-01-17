@@ -201,6 +201,7 @@ void set_traffic_light_cars_red_and_walkers_green() {
     counter_delay_ms=0;
     counter_cycle=0;
     is_cycling_traffic_light_walkers_green = true;
+    uart_transmit_string("is_cycling_traffic_light_walkers_green setting true \n\r");
 
 }
 
@@ -208,6 +209,7 @@ void set_traffic_light_walkers_red_and_cars_green() {
     counter_delay_ms = 0; 
     counter_cycle=0;
     is_cycling_traffic_light_cars_green = true;
+    uart_transmit_string("is_cycling_traffic_light_cars_green setting true \n\r");
     // Switch Red Walkers traffic Light -(?msTODO)-> Switch Yellow Cars Traffic Light -(?msTODO)->Switch green for Cars Traffic Light
 }
 
@@ -404,6 +406,12 @@ void execute_state_mashine_cars_green(){
 
 void execute_state_mashine_walkers_green(){
     //Part 2
+    if(is_cycling_traffic_light_walkers_green){
+        uart_transmit_string("$$$$$$$TRUE is_cycling_traffic_light_walkers_green $$$$\n\r");
+        if(counter_delay_ms==delay_before_first_cycle){
+            uart_transmit_string("!!!!!!!TRUE counter_delay_ms==delay_before_first_cycle !!!!!\n\r");
+        }
+    }
     if(counter_delay_ms==delay_before_first_cycle && is_cycling_traffic_light_walkers_green && counter_cycle==1 ){
         // see -> 1) Blink <b>Cars -- Slave 1</b> Traffic Light Green
         SS_SELECT_SLAVE_1
