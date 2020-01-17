@@ -215,33 +215,48 @@ void set_traffic_light_walkers_red_and_cars_green() {
 
 void check_slave_message_should_action(){
 
-    char slave_message = '0';
+    //char slave_message = '0';
 
     uint8_t slave_message_pkw = 0;
     uint8_t slave_message_walker = 0;
     
      // When Walkers is waiting and currently has red TODO slave_message_int+48
-    if(is_day_mode && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
-        uart_transmit_string("5. Gesendet: Check if Someone is near the Traffic Light master --> slave request \n\r");
+    if(is_day_mode  && counter_to_do_action_seconds>=5 && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
+        uart_transmit_string("0. Gesendet: Check if Someone is near the Traffic Light master --> slave request \n\r");
         //see --> 5) Check if Someone is near the <b>Walkers -- Slave 2</b> Traffic Light master --> slave request
         SS_SELECT_SLAVE_2
         //_delay_ms(100);
-        slave_message_walker = SPI_MasterTransmit('5');
+        slave_message_walker = SPI_MasterTransmit(0);
         SS_UNSELECT_SLAVE_2
 
         SS_SELECT_SLAVE_1
         //_delay_ms(100);
-        slave_message_pkw = SPI_MasterTransmit('5');
+        slave_message_pkw = SPI_MasterTransmit(0);
         SS_UNSELECT_SLAVE_1
 
-        if(is_traffic_light_cars_red &&  slave_message_pkw == 1 && slave_message_walker ==0 ){
-            uart_transmit_string("Do action switch to next cycle \n\r");
+		uart_transmit_string("Got from slave_pkw \n\r");
+		uart_transmit(slave_message_pkw);
+		uart_transmit_string("\n\r");
+		
+		uart_transmit_string("Got from slave_walker \n\r");
+		uart_transmit(slave_message_walker);
+		uart_transmit_string(" \n\r");
+		if(is_traffic_light_cars_red){
+			uart_transmit_string("is_traffic_light_cars_red TRUE \n\r");
+			
+			if(slave_message_pkw == '1' && slave_message_walker == '0' ){
+            uart_transmit_string("Do action switch to next cycle 1 \n\r");
             should_action = true;
         }
-        if(!is_traffic_light_cars_red && slave_message_pkw == 0 && slave_message_walker == 1){
-            uart_transmit_string("Do action switch to next cycle \n\r");
-            should_action = true;
-        }
+       
+		}else {
+			uart_transmit_string("is_traffic_light_cars_red FALSE \n\r");
+			if(slave_message_pkw == '0' && slave_message_walker == '1'){
+				uart_transmit_string("Do action switch to next cycle 2 \n\r");
+				should_action = true;
+			}
+		}
+        
 
     }
     /*
@@ -250,12 +265,12 @@ void check_slave_message_should_action(){
         //see --> 5) Check if Someone is near the <b>Cars -- Slave 1</b> Traffic Light master --> slave request
         SS_SELECT_SLAVE_1
         //_delay_ms(100);
-        slave_message_int = SPI_MasterTransmit('5');
+        slave_message_int = SPI_MasterTransmit(0);
         SS_UNSELECT_SLAVE_1
-        uart_transmit_string("5. Gesendet: Check if Someone is near the Traffic Light master. \n\r");
-        if(slave_message != 0) {
+        uart_transmit_string("0. Gesendet: Check if Someone is near the Traffic Light master. \n\r");
+        if(slave_message_int != 0) {
 			uart_transmit_string("Got something else than zero \n\r");
-			uart_transmit(slave_message+48);
+			uart_transmit(slave_message_int);
 		}
 		
         
@@ -346,7 +361,7 @@ void init_interrupts(){
 void check_current_state_and_do_action_if_needed(){
     
     if(counter_to_do_action_seconds == 30 && !should_action){
-        uart_transmit_string("30 sec since last state \n \r");
+        //uart_transmit_string("30 sec since last state \n \r");
         should_action = true;
     }
     if(should_action){
