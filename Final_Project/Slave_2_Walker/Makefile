@@ -1,6 +1,6 @@
 F_CPU = 16000000
 target = slave
-objs = traffic_light/light_ws2812.o traffic_light/traffic_lights.o ultrasonicsensor/ultrasonicsensor.o
+objs = traffic_light/light_ws2812.o traffic_light/traffic_lights.o ultrasonicsensor/ultrasonicsensor.o  buzzer.o
 port = /dev/ttyACM0
 
 

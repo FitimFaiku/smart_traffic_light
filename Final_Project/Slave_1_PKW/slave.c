@@ -82,7 +82,6 @@ void uart_init(uint32_t baudrate) {
 volatile char s = 0;
 uint8_t sending = 0;
 ISR(SPI_STC_vect){
-	uart_transmit_string("SPI\n\r");
 	sending = 0;
 	s = SPDR;
 }
@@ -90,8 +89,8 @@ ISR(SPI_STC_vect){
 int main() {
 	uint8_t status='0';
     uart_init(115200);
-    uart_transmit_string("I bims der Slave\n\r");
-	uint16_t entfrernung;
+    uart_transmit_string("I bims der Slave1_traffic\n\r");
+	uint16_t distance;
 	sei();
 	
     SPI_SlaveInit();
@@ -114,20 +113,37 @@ int main() {
         //logik for traffic lights - the intepretation of the cmds of the master
         if(c=='1'){// blink green
             BlinkGreenTL();
+			status= '0';        
         }
         if(c=='2'){// Switch to green
             SwitchGreenTL();
-            status=0;
+            distance = ultrasonicsensor();
+			if(distance <= 5){
+				uart_sendstring("dist 1\n\r"); 
+				status= '1';
+				//c= SPI_SlaveReceive(distance+48); //send a char to master to know that a person is waiting
+			}else{
+				status= '0';
+				uart_sendstring("dist 0\n\r"); 
+			}
+
+
         }
         if(c=='3'){ // Switch to yellow
             SwitchYellowTL();
         }
         if(c=='4'){ // switch to red
 		SwitchRedTL();
-		ultrasonicsensor();
-          if(entfrernung<=10){
-			status='6';
-		  }
+		distance = ultrasonicsensor();
+			if(distance <= 5){
+				uart_sendstring("dist 1\n\r"); 
+				status= '1';
+				//c= SPI_SlaveReceive(distance+48); //send a char to master to know that a person is waiting
+			}else{
+				status= '0';
+				uart_sendstring("dist 0\n\r"); 
+			}
+		  
 
         }
         if(c=='5'){ // ckeck if someone is near the trfficlight
@@ -135,6 +151,7 @@ int main() {
         }
         if(c=='7'){ //Nightmode
             BlinkYellowTL();
+            status=0;
       }
     }
 }

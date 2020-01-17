@@ -1,7 +1,7 @@
 F_CPU = 16000000
 target = slave
 objs = traffic_light/light_ws2812.o traffic_light/traffic_lights.o ultrasonicsensor/ultrasonicsensor.o
-port = /dev/ttyACM2
+port = /dev/ttyACM1
 
 
 CFLAGS = -g2 -I. -ILight_WS2812 -mmcu=atmega328p -DF_CPU=$(F_CPU) 
