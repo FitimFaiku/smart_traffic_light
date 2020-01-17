@@ -33,12 +33,12 @@
 struct cRGB rgb[35];
 
 void SwitchRedTL(){
-	for (uint8_t i = 0; i<11; i++){
+	for (uint8_t i = 23; i<35; i++){  // 0; i<11;
 		rgb[i].r = Rot;
 		rgb[i].g = green_0;
 		rgb[i].b = blue_0;
 	}
-	for (uint8_t i = 11; i<35; i++){
+	for (uint8_t i = 0; i<23; i++){  //11; i<35;
 		rgb[i].r = rot_0;
 		rgb[i].g = green_0;
 		rgb[i].b = blue_0;
@@ -46,12 +46,12 @@ void SwitchRedTL(){
 	ws2812_setleds(rgb,35); //rot
 }
 void SwitchGreenTL(){
-	for (uint8_t i = 0; i<23; i++){
+	for (uint8_t i = 11; i<35; i++){ // 0; i<23;
 				rgb[i].r = rot_0;
 				rgb[i].g = green_0;
 				rgb[i].b = blue_0;
 			}
-			for (uint8_t i = 23; i<35; i++){
+			for (uint8_t i = 0; i<11; i++){ // 23; i<35;
 				rgb[i].r = rot_0;
 				rgb[i].g = Green;
 				rgb[i].b = blue_0;
@@ -103,24 +103,19 @@ void BlinkYellowTL(){
 		_delay_ms(1000);
 }
 void BlinkGreenTL(){
-	for (uint8_t i =0; i<11; i++){
+	for (uint8_t i =11; i<35; i++){
 			rgb[i].r = rot_0;
 			rgb[i].g = green_0;
 			rgb[i].b = blue_0;
 		}
-		for (uint8_t i = 11; i<23; i++){
-			rgb[i].r = rot_0;
-			rgb[i].g = green_0;
-			rgb[i].b = blue_0;
-		}
-		for (uint8_t i = 23; i<35; i++){
+		for (uint8_t i = 0; i<11; i++){
 			rgb[i].r = rot_0;
 			rgb[i].g = Green;
 			rgb[i].b = blue_0;
 		}
 		ws2812_setleds(rgb,35); //green
 		_delay_ms(1000);
-		for (uint8_t i = 23; i<35; i++){
+		for (uint8_t i = 0; i<11; i++){
 			rgb[i].r = rot_0;
 			rgb[i].g = green_0;
 			rgb[i].b = blue_0;
