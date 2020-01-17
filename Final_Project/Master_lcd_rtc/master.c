@@ -338,8 +338,13 @@ void check_current_state_and_do_action_if_needed(){
     }
 }
 
-void execute_state_mashine_cars_green(){
-
+void execute_state_mashine_cars_green(){ 
+    if(is_cycling_traffic_light_cars_green){
+        uart_transmit_string("$$$$$$$TRUE is_cycling_traffic_light_cars_green $$$$\n\r");
+        if(counter_delay_ms==delay_before_first_cycle){
+            uart_transmit_string("!!!!!!!TRUE counter_delay_ms==delay_before_first_cycle !!!!!\n\r");
+        }
+    }
     if(counter_delay_ms==delay_before_first_cycle && is_cycling_traffic_light_cars_green && counter_cycle==0){
         // see -> 1) Blink <b>Walker - Slave 2</b> Traffic Light Green
         SS_SELECT_SLAVE_2
