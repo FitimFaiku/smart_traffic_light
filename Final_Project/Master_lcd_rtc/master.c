@@ -144,7 +144,7 @@ void uart_init(uint32_t baudrate) {
 
 ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
 	// TODO get those values from the master module and set them initialy and afterwards display them!!!
-    static uint8_t menueopencounter=0, cnt_ms=0,cnt_ms_ten=0, cnt_s=0, // gloabl lifetime, local visibillity Counter for miliseconds
+    static uint8_t menueopencounter=0, cnt_ms=0,cnt_ms_ten=0, cnt_s=0; // gloabl lifetime, local visibillity Counter for miliseconds
     TCNT0 = 6; // counter auf 6 --> jede 256-6= 250 ticks --> 1 ms
     counter_delay_ms++;
     // SS_SELECT_SLAVE_1
