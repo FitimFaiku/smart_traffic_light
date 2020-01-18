@@ -144,7 +144,7 @@ void uart_init(uint32_t baudrate) {
 
 ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
 	// TODO get those values from the master module and set them initialy and afterwards display them!!!
-    static uint8_t menueopencounter=0, cnt_ms=0,cnt_ms_ten=0, cnt_s=0, cnt_min=26; // gloabl lifetime, local visibillity Counter for miliseconds
+    static uint8_t menueopencounter=0, cnt_ms=0,cnt_ms_ten=0, cnt_s=0, // gloabl lifetime, local visibillity Counter for miliseconds
     TCNT0 = 6; // counter auf 6 --> jede 256-6= 250 ticks --> 1 ms
     counter_delay_ms++;
     // SS_SELECT_SLAVE_1
@@ -160,35 +160,38 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
    
 
     // $$$$$$$$$$$$$$$$ Anfang check
-
+    set_hour(current_hour);
+    
+    
     
     if(cnt_ms++>=100){
 		cnt_ms_ten++;
 		cnt_ms=0;
 	} 
-    if(cnt_ms_ten>=10){
+    if(cnt_ms_ten>10){
         cnt_s++;
         counter_to_do_action_seconds++;
         uart_transmit_string("Updating seconds ... \n\r");
 
        // Every second we check if maybe someone is near the Red Traffic Light slave -> master command 6 or 7 
         check_slave_message_should_action();
-        if(cnt_s>=60){
-            cnt_min++;
-            if(cnt_min>=60){
+        if(cnt_s>60){
+            current_minute++;
+            if(current_minute>60){
                 current_hour++;
-                if(current_hour>=24){
+                if(current_hour>24){
                     current_hour=0;
                 }
-                cnt_min=0;
+                // TODO update hour to check if nightmode or daymode.
+                set_hour(current_hour);
+                current_minute=0;
             }
+            set_minutes(current_minute);
             cnt_s=0;
             menueopencounter++;
-            //uart_transmit_string("Updating ... \n\r Next State:");
-            //uart_transmit(next_state);
-            //uart_transmit_string("\n\r");
-            //setTime(menueopencounter, current_hour,cnt_min,cnt_s);
         }
+        set_seconds(cnt_s);
+        display_and_update_menue();
         cnt_ms_ten=0;
         //DS13xx_Read_CLK_Registers();
         
@@ -302,6 +305,10 @@ void check_current_hour_and_initialize_volatile_variables(){
     //current_minute = get_current_minute(); 
     current_minute = 0;
     // 21-6:00 Nachtmodus TODO right times here
+
+    set_hour(current_hour);
+    set_minutes(current_minute);
+    set_seconds(0);
     if(current_hour>=21){ 
         should_action = true;
         //Night mode

@@ -114,9 +114,11 @@ void setTime(uint8_t counter, uint8_t hour, uint8_t minutes, uint8_t seconds);
 void set_hour(uint8_t hour);
 void set_minutes(uint8_t minutes);
 void set_seconds(uint8_t seconds);
+void set_counter_till_next_interval(uint8_t counter_till_next_interval);
 void show_and_update_time_menue();
 void show_and_update_counter_interval_menue();
 void change_menue();
+void display_and_update_menue();
 
 
 
