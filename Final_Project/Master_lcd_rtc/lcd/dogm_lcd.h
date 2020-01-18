@@ -95,6 +95,12 @@
 #define DISPLAY_START_ADRESS 0b10000000
 #define CURSOR_STATE 0b00001100
 
+// Uart Functions 
+void uart_init(uint32_t baudrate);
+void uart_transmit(char character);
+void uart_transmit_string(char *string);
+char uart_receive(void);
+
 // Functions to control the display
 void lcdSpiInit();
 void lcdInit();
@@ -104,6 +110,15 @@ void lcdSetCursor(uint8_t row, uint8_t col);
 void lcdCursorOnOff(uint8_t cursorOnOff, uint8_t positionOnOff);
 void LCD_and_Spi_Init();
 void setTime(uint8_t counter, uint8_t hour, uint8_t minutes, uint8_t seconds);
+
+void set_hour(uint8_t hour);
+void set_minutes(uint8_t minutes);
+void set_seconds(uint8_t seconds);
+void show_and_update_time_menue();
+void show_and_update_counter_interval_menue();
+void change_menue();
+
+
 
 // Functions to write to the display
 void lcdWriteChar(char x);
