@@ -8,7 +8,6 @@
 #include "ultrasonicsensor/ultrasonicsensor.h"
 #include <avr/interrupt.h>
 #include <string.h>
-#include "buzzer.h"
 
 
 #define PORT_DIRECTION DDRB
@@ -20,14 +19,14 @@
 #define MOSI 3
 #define SS   2
 
-
+volatile uint8_t frequenz=0;
 
 void SPI_SlaveInit(void) {
     // Set MISO output, all others input
     PORT_DIRECTION |= (1 << MISO);
     // Enable SPI
-    // SPCR |= (1 << SPE) | (1 << CPOL) | (1 << CPHA);
-    SPCR |= (1 << SPE);
+   // SPCR |= (1 << SPE) | (1 << CPOL) | (1 << CPHA);
+    SPCR |= (1 << SPE) | (1<< SPIE);
 }
 
 void uart_transmit_slave(char character) {
@@ -84,8 +83,21 @@ void uart_init(uint32_t baudrate) {
     // for interrupts: enable receive complete interrupt
     // UCSR0B |= (1<<RXCIE0); we do not use interrupts by now..
 }
-
-
+ISR(TIMER0_OVF_vect) //timer 0 overflow interrupt service routine
+{
+	static uint16_t count1=0,count2=0; //static: global lifetime, local visibility		
+	TCNT0 =0;				//25 ticks bis zum overflow
+	if(count2<=1000){
+		if(frequenz>count1) PORTD |= (1<<4); //Pin high setzen
+		else PORTD &= ~(1<<4); 				//Pin low setzen
+		count1++;
+		if(count1==10) count1=0;	// counter zurücksetzten
+	}
+	count2++;
+	if(count2>=2000){
+		count2=0 ;
+	}
+}
 
 int main() {
     uart_init(115200);
@@ -93,9 +105,11 @@ int main() {
     DDRB |= (1<<PB4);  	 	// Set MISO output //SPI_SlaveInit();
     PORTD |= (1<<PD2);
 	SPCR |= (1<<SPE);       // enable SPI in slave mode
-	
+	TCCR0B =(1<<CS00)|(1<<CS01); 	//b prescaler 64 -> 4µs tick time, 250 ticks == 1ms
+	TCNT0= 0; 	//25 ticks bis zum overflow
+	TIMSK0=1; 	// enable timer 0 overflow interrupts
+	sei();    	//	enable interrupts (globally)
     uart_transmit_string("I bims der Slave2_walker\n\r");
-    buzzer(7);
     uint8_t button=0;
 	char c = 'X';
 	char status='0';
@@ -128,11 +142,13 @@ int main() {
      
         if(c=='1'){ //blink green befor switching to red
 			BlinkGreenPL();
-			buzzer(5);
+			frequenz=6;
 			status= '0';
 		}
         if(c=='4'){// Switch to red pedestrian traffic light
             SwitchRedPL();
+            frequenz=0;
+			button=0;
        		distance = ultrasonicsensor();
 			if(distance <= 5){
 				uart_sendstring("dist 1\n\r"); 
@@ -142,16 +158,21 @@ int main() {
 				status= '0';
 				uart_sendstring("dist 0\n\r"); 
 			}
-			buzzer(10);
-			button=0;
+			
         }
         if(c=='2'){ //Switch to green pedestrian traffic light
 			SwitchGreenPL();
-			if((PIND & (1<<PD2))==0){
-				button = 1;
+			
+			if((PIND & (1<<PD2))==0){//Button to turn on the Buzzer 
+				button = 1; 
 			}
-			if(button =0){
-				//buzzer(10); //no sound
+			if(button==1){
+				status='1';
+				frequenz=7;
+				
+			}
+			else{
+				frequenz=10; //no sound
 				distance = ultrasonicsensor();
 				if(distance <= 5){
 					uart_sendstring("dist 1\n\r"); 
@@ -161,10 +182,8 @@ int main() {
 					status= '0';
 					uart_sendstring("dist 0\n\r"); 
 				}
-			}else{
-				status='1';
-				buzzer(6);
 			}
+				
         }
         /*if(c== 0){ //TODO: REMOVE THIS STATUS BCZ SLAVE ANWAY WILL SEND BACK A CHAR 
 			//check if someone is near the traffic light

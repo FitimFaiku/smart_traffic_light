@@ -90,12 +90,11 @@ int main() {
 	uint8_t status='0';
     uart_init(115200);
     uart_transmit_string("I bims der Slave1_traffic\n\r");
-	uint16_t distance;
+	uint16_t distance=6;
 	sei();
 	
     SPI_SlaveInit();
 	char c = 'X';
-	SwitchGreenTL();
     while (1) {
 		if(!sending) {
 			sending = 1;
@@ -117,7 +116,7 @@ int main() {
         }
         if(c=='2'){// Switch to green
             SwitchGreenTL();
-            distance = ultrasonicsensor();
+           distance = ultrasonicsensor();
 			if(distance <= 5){
 				uart_sendstring("dist 1\n\r"); 
 				status= '1';
