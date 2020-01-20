@@ -190,9 +190,9 @@ int main() {
 			//if true,return 6
 			status= '0';
 		}*/
-		//if(c==7){
-			// gelb blink
-		//} 
+		if(c=='7'){ // night mode
+			NoLights();
+		} 
 		
 		//TODO: implement night mood -> noLights()
 		// night mode = blink yellow pkw traffic light
