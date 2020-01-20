@@ -15,11 +15,6 @@
     <li></li>
     </ol>
 
-    
-##Code Conventions:
-Code convention is snake case and we use tabs for structures.
-So we write methodes and variables like day_mode and not dayMode.
-
 
 ### Git basic commandos:
 git pull  --> Pullen vom remote branch <br />
@@ -38,19 +33,6 @@ git push --> Aktuellen commit zu remote pushen. <br />
 5) Check if Someone is near the Traffic Light master --> slave request 
 6) Yes someone is near the Traffic Light // TODO delete
 7) Night Mode -- night mode
-
-
-1) Tagesmodus -->  Init function set traffic Light green and Walker Red
-2) Nachtmodus --> Send to slaves code 2
-3) Switch to Red <b>Walker</b> Traffic Light
-4) Switch to Green <b>Walker</b> Traffic Light
-5) Switch to Red <b>Cars</b> Traffic Light
-6) Switch to Green <b>Cars</b> Traffic Light
-7) Switch to Yellow <b>Cars</b> Traffic Light
-8) Someone is near the <b>Walkers</b> Traffic Light (Slave to Master communication)
-9) Someone is near the <b>Cars</b> Traffic Light (Slave to Master communication)
-10) Blink <b>Cars</b> Traffic Light Green
-11) Blink <b>Walkers</b> Traffic Light Green
 
 ## Sources 
 https://www.avrfreaks.net/forum/atmega32-interfacing-spi
