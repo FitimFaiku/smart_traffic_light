@@ -37,26 +37,6 @@ void uart_transmit_string(char *string) {
         uart_transmit(string[i]);
     }
 }
-
-/*char SPI_SlaveReceive(char toMaster) { //was (void)
-	SPDR = toMaster;
-    // Wait for reception complete
-    // SPI Status Reg & 1<<SPI Interrupt Flag
-    while (!(SPSR & (1 << SPIF)));
-    // Return data register
-    return SPDR;
-   
-    //Wait for reception complete 
-    //while (!(SPSR & (1 << SPIF)));
-	if(SPSR & (1 << SPIF)) {
-		//Return Data Register
-		return SPDR;
-	} else {
-		return '0';
-	}
-     
-}*/
-
 void SPI_SlaveReceive(char toMaster) {
 	SPDR = toMaster;
 }
@@ -87,7 +67,7 @@ ISR(SPI_STC_vect){
 }
 
 int main() {
-	uint8_t status='0';
+	uint8_t status='0';// Status 0 no one is infront of the Traffic Light
     uart_init(115200);
     uart_transmit_string("I bims der Slave1_traffic\n\r");
 	uint16_t distance=6;
@@ -101,7 +81,7 @@ int main() {
 			SPI_SlaveReceive(status); // Send
 		}
 		
-		
+		//When the Master send somthing transmitt it on uart
 		if(s!=0){
 			uart_sendstring("reveived");
 			uart_transmit_slave(c);

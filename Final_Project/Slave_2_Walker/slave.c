@@ -45,14 +45,7 @@ void uart_transmit_string(char *string) {
     }
 }
 
-/*char SPI_SlaveReceive(char toMaster) { //was (void)
-	SPDR = toMaster;
-    // Wait for reception complete
-    // SPI Status Reg & 1<<SPI Interrupt Flag
-    while (!(SPSR & (1 << SPIF)));
-    // Return data register
-    return SPDR;
-}*/
+
 //non blocking
 char SPI_SlaveReceive(char toMaster) {
 	 SPDR = toMaster;
@@ -116,12 +109,6 @@ int main() {
 	uint16_t distance;
 	//char s = 'a';
 
-	/*SPDR = '0'; 					// set return data to master
-	while(!(SPSR & (1<<SPIF) )); 	// Wait until transmission occurred 
-	uart_transmit_string("first received char:");
-	c=SPDR;
-	uart_transmit_slave(c);  			// output received data from master
-	 */
     while (1) {
 		char s=SPI_SlaveReceive(status);
         if(s!=0){
@@ -130,14 +117,7 @@ int main() {
 			uart_transmit_string("\n\r");
            c = s;
 		}
-/*		
-		c=SPI_SlaveReceive(status);
-		if (c) {
-		uart_sendstring("received:");
-		uart_transmit_slave(c);
-		uart_transmit_string("\n\r");
-	    } else 	uart_sendstring("c is 0\n\r");
-*/
+
         //logik for traffic lights - the intepretation of the cmds of the master
      
         if(c=='1'){ //blink green befor switching to red
@@ -182,20 +162,12 @@ int main() {
 					status= '0';
 					uart_sendstring("dist 0\n\r"); 
 				}
-			}
-				
+			}	
         }
-        /*if(c== 0){ //TODO: REMOVE THIS STATUS BCZ SLAVE ANWAY WILL SEND BACK A CHAR 
-			//check if someone is near the traffic light
-			//if true,return 6
-			status= '0';
-		}*/
+       
 		if(c=='7'){ // night mode
-			NoLights();
+			NoLights(); // Alle LEDs ausschalten
 		} 
-		
-		//TODO: implement night mood -> noLights()
-		// night mode = blink yellow pkw traffic light
     }
 }
 
