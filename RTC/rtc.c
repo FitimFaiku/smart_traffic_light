@@ -53,7 +53,7 @@ void DS13xx_Read_CLK_Registers(void);
 //0b1010000=50
 //0b1011000=58='0'
 unsigned char ClockSecond = 0b01000000; //40 100=4 0000=0 -> 40
-unsigned char ClockMinute = 0b01000000;
+unsigned char ClockMinute = 0b01000000; 
 unsigned  char ClockHour = 0b00010011; //13  0001=1 0011=3 -> 13
 //unsigned char ClockDay;
 //unsigned char ClockMonth;

@@ -15,10 +15,10 @@ Test the DOGM-Display over SPI.
 volatile static uint8_t hour;
 volatile static uint8_t minutes;
 volatile static uint8_t seconds;
-volatile static uint8_t counter_till_next_interval;
+volatile static int8_t counter_till_next_interval;
 static uint8_t counter_menue_oppened = 0;
 static bool is_green = false;
-static uint8_t menue_selected = 1;
+static uint8_t menue_selected = 2;
 static uint8_t max_amoun_of_menues = 2;
 
 
@@ -34,7 +34,7 @@ void set_seconds(uint8_t seconds){
 	seconds= seconds;
 }
 
-void set_counter_till_next_interval(uint8_t counter_till_next_interval){
+void set_counter_till_next_interval(int8_t counter_till_next_interval){
 	counter_till_next_interval = counter_till_next_interval;
 }
 

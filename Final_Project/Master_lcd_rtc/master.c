@@ -10,6 +10,7 @@
 #include <avr/sleep.h>
 #include <stdbool.h> // inkludiere bool
 
+
 #define PORT_DIRECTION DDRB
 #define PORT_VALUE PORTB
 
@@ -37,27 +38,6 @@
 #define SS_UNSELECT_SLAVE_2 PORT_VALUE_SLAVE |= (1 << SS_SLAVE_2);
 #define SS_SELECT_SLAVE_2 PORT_VALUE_SLAVE &= ~(1 << SS_SLAVE_2);
 
-static int16_t delay_for_communication_between_traffic_cycles_ms = 50;
-static int16_t delay_before_first_cycle = 500;
-static int16_t delay_between_green_blink_and_orange_or_red = 6000;
-static int16_t delay_between_orange_and_red_or_green = 5000;
-static int16_t delay_between_one_slave_red_and_other_start = 3000;
-
-static uint8_t counter_cycle = 0;
-
-
-static volatile char next_state = '0';
-static int16_t counter_delay_ms=0;
-static volatile uint8_t current_hour;
-static volatile uint8_t current_minute;
-static volatile char last_state; 
-static volatile bool should_action = false;
-static bool is_cycling_traffic_light_cars_green = false;
-static bool is_cycling_traffic_light_walkers_green = false;
-static volatile bool is_day_mode;
-static volatile bool is_traffic_light_cars_red ;
-static volatile uint8_t counter_to_do_action_seconds;
-
 void init();
 void uart_init(uint32_t baudrate);
 void uart_transmit(char character);
@@ -75,6 +55,30 @@ void check_current_state_and_do_action_if_needed();
 void set_traffic_light_green();
 
 void do_action();
+
+static int16_t delay_for_communication_between_traffic_cycles_ms = 50;
+static int16_t delay_before_first_cycle = 500;
+static int16_t delay_between_green_blink_and_orange_or_red = 6000;
+static int16_t delay_between_orange_and_red_or_green = 5000;
+static int16_t delay_between_one_slave_red_and_other_start = 3000;
+
+static uint8_t counter_cycle = 0;
+
+
+static volatile char next_state = '0';
+static int16_t counter_delay_ms=0;
+static volatile uint8_t current_hour;
+static volatile uint8_t current_minute;
+static volatile int8_t counter_till_next_interval;
+static volatile char last_state; 
+static volatile bool should_action = false;
+static bool is_cycling_traffic_light_cars_green = false;
+static bool is_cycling_traffic_light_walkers_green = false;
+static volatile bool is_day_mode;
+static volatile bool is_traffic_light_cars_red ;
+static volatile uint8_t counter_to_do_action_seconds;
+
+
 
 void SPI_MasterInit(void) {
     // Set MOSI and SCK output, all others input
@@ -171,6 +175,10 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
     if(cnt_ms_ten>10){
         cnt_s++;
         counter_to_do_action_seconds++;
+        counter_till_next_interval--;
+        if(counter_till_next_interval>=0){
+            set_counter_till_next_interval(counter_till_next_interval);
+        }
         uart_transmit_string("Updating seconds ... \n\r");
 
        // Every second we check if maybe someone is near the Red Traffic Light slave -> master command 6 or 7 
@@ -252,7 +260,7 @@ void check_slave_message_should_action(){
             should_action = true;
         }
        
-		}else {
+		} else {
 			uart_transmit_string("is_traffic_light_cars_red FALSE \n\r");
 			if(slave_message_pkw == '0' && slave_message_walker == '1'){
 				uart_transmit_string("Do action switch to next cycle 2 \n\r");
@@ -262,29 +270,9 @@ void check_slave_message_should_action(){
         
 
     }
-    /*
-    // When Car is waiting and currently has red TODO slave_message_int+48
-    if(is_day_mode && next_state == '4' && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
-        //see --> 5) Check if Someone is near the <b>Cars -- Slave 1</b> Traffic Light master --> slave request
-        SS_SELECT_SLAVE_1
-        //_delay_ms(100);
-        slave_message_int = SPI_MasterTransmit(0);
-        SS_UNSELECT_SLAVE_1
-        uart_transmit_string("0. Gesendet: Check if Someone is near the Traffic Light master. \n\r");
-        if(slave_message_int != 0) {
-			uart_transmit_string("Got something else than zero \n\r");
-			uart_transmit(slave_message_int);
-		}
-		
-        
-
-        // TODO check slave message
-    }*/
 }
 
 void do_action(void) {
-    //TODO check if slave gives some message here and react on that.
-
     if(is_traffic_light_cars_red && next_state=='4'){
         //Switch to Green Cars Traffic Light and Red Walkers Traffic Light
         set_traffic_light_walkers_red_and_cars_green();
@@ -300,16 +288,16 @@ void do_action(void) {
 * Gets current hour from RTC - DS13xx and initializes cnr_h and current_status
 */
 void check_current_hour_and_initialize_volatile_variables(){
-    //current_hour = get_current_hour();
-    current_hour = 20;
-    //current_minute = get_current_minute(); 
-    current_minute = 0;
+    current_hour = get_current_hour();
+    //current_hour = 20;
+    current_minute = get_current_minute(); 
+    //current_minute = 0;
     // 21-6:00 Nachtmodus TODO right times here
 
     set_hour(current_hour);
     set_minutes(current_minute);
     set_seconds(0);
-    if(current_hour>=21){ 
+    if(current_hour>=21 || current_hour<6){ 
         should_action = true;
         //Night mode
         uart_transmit_string("Nachtmodus");
@@ -432,7 +420,9 @@ void execute_state_mashine_cars_green(){
 			uart_transmit(slaveValue);
 			uart_transmit_string(": 2. Gesendet: Switch to Green <b>Cars</b> Traffic Light \n\r");
 			next_state = '3';
-			counter_to_do_action_seconds = 0;
+            counter_to_do_action_seconds = 0;
+            counter_till_next_interval = 30;
+            
 		}
     }
 }
@@ -490,7 +480,8 @@ void execute_state_mashine_walkers_green(){
 			is_cycling_traffic_light_walkers_green=false;
 			counter_cycle=0;
 			next_state = '4'; // Next is cars schould get green
-			counter_to_do_action_seconds = 0;
+            counter_to_do_action_seconds = 0;
+            counter_till_next_interval = 30;
 		}
 	}  
 }
