@@ -85,6 +85,15 @@ void SPI_MasterInit(void) {
     PORT_DIRECTION |= (1 << MOSI) | (1 << SCK) | (1<<SS);
     PORT_DIRECTION_SLAVE |= (1<<SS_SLAVE_1) | (1<<SS_SLAVE_2);
     PORT_VALUE_SLAVE |= (1<<SS_SLAVE_1) | (1<<SS_SLAVE_2);
+    
+    //init SPI
+	// SPI2X...Double SPI Speed Bit
+	// SPE...SPI Enable Bit
+	// MSTR...Master SPI Mode
+	// SPR1...SCK Frequency set to Fosc/32
+    //SPSR |= (1<<SPI2X);  
+	//SPCR |= ((1<<SPE) | (1<<MSTR) | (1<<SPR1) | (1<<CPOL) | (1<<CPHA));
+	
     // Enable SPI, Master, set clock rate fck/16
     SPCR |= (1 << SPE) | (1 << MSTR) | (1 << SPR0) | (1 << SPR1);
 }
@@ -185,9 +194,9 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
         check_slave_message_should_action();
         if(cnt_s>60){
             current_minute++;
-            if(current_minute>60){
+            if(current_minute>=60){
                 current_hour++;
-                if(current_hour>24){
+                if(current_hour>=24){
                     current_hour=0;
                 }
                 // TODO update hour to check if nightmode or daymode.
@@ -196,7 +205,6 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
             }
             set_minutes(current_minute);
             cnt_s=0;
-            menueopencounter++;
         }
         set_seconds(cnt_s);
         display_and_update_menue();
@@ -334,7 +342,7 @@ void init(){
 
     // Initialize the SPI interface for the LCD display
     // Initialize the LCD display
-    //LCD_and_Spi_Init();
+    LCD_and_Spi_Init();
     
     //initialize volatile variables such as 
     check_current_hour_and_initialize_volatile_variables();

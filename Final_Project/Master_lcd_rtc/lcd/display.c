@@ -12,9 +12,9 @@ Test the DOGM-Display over SPI.
 #include <stdbool.h> // Include bool
 #include <stdio.h> // For sprintf
 
-volatile static uint8_t hour;
-volatile static uint8_t minutes;
-volatile static uint8_t seconds;
+volatile static uint8_t hour=1;
+volatile static uint8_t minutes=10;
+volatile static uint8_t seconds=0;
 volatile static int8_t counter_till_next_interval;
 static uint8_t counter_menue_oppened = 0;
 static bool is_green = false;
@@ -22,16 +22,16 @@ static uint8_t menue_selected = 2;
 static uint8_t max_amoun_of_menues = 2;
 
 
-void set_hour(uint8_t hour){
-	hour = hour;
+void set_hour(uint8_t given_hour){
+	hour = given_hour;
 }
 
-void set_minutes(uint8_t minutes){
-	minutes = minutes;
+void set_minutes(uint8_t given_minutes){
+	minutes = given_minutes;
 }
 
-void set_seconds(uint8_t seconds){
-	seconds= seconds;
+void set_seconds(uint8_t given_seconds){
+	seconds= given_seconds;
 }
 
 void set_counter_till_next_interval(int8_t counter_till_next_interval){
@@ -39,6 +39,7 @@ void set_counter_till_next_interval(int8_t counter_till_next_interval){
 }
 
 void display_and_update_menue(){
+	
 	switch(menue_selected){
 		case 1:
 		show_and_update_time_menue();
@@ -109,98 +110,6 @@ void LCD_and_Spi_Init(){
     // Initialize the LCD display
     lcdInit();
 }
-
-
-
-/*
-ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
-	// TODO get those values from the master module and set them initialy and afterwards display them!!!
-    static uint8_t cnt_ms=0,cnt_ms_ten=0, cnt_s=0, cnt_min=26, cnt_hour=11; // gloabl lifetime, local visibillity Counter for miliseconds
-    TCNT0 = 6; // counter auf 6 --> jede 256-6= 250 ticks --> 1 ms
-    if(cnt_ms++>=100){
-		cnt_ms_ten++;
-		cnt_ms=0;
-	} 
-    if(cnt_ms_ten>=10){
-		cnt_s++;
-		uart_transmit_string("I am in interrupt of display now");
-        if(cnt_s>=60){
-            cnt_min++;
-            if(cnt_min>=60){
-                cnt_hour++;
-                if(cnt_hour>=24){
-                    cnt_hour=0;
-                }
-                cnt_min=0;
-            }
-            cnt_s=0;
-        }
-        cnt_ms_ten=0;
-        //setTime(cnt_hour,cnt_min,cnt_s);
-    }
-    
-}
-*/
-
-// TODO add a new Methode where the secounds are counted down so it is visible when the traffic light changes from green to red 
-
-
-
-//int main(void) {
-    //TCCR0B = 3; // prescaler 64 -> 4us tick time, 250 ticks -- 1 ms
-    //TIMSK0 = 1 ; // enablen der overflow interrupts
-    //TCNT0 = 6; // counter auf 6 --> jede 256-6= 250 ticks --> 1 ms
-    //sei(); //enable interrupts(globally)
-    
-    //LCD_and_Spi_Init();
-       // TBD: implement lcdWriteString ...
-
-	/** _delay_ms(2000);
-	lcdSetCursor(1,1);
-	lcdWriteString("der Beste!!!");
-     */
-	/**
-	 * 
-	lcdOnOff(LCD_OFF);
-	
-	_delay_ms(2000);
-	lcdOnOff(LCD_ON);
-	lcdCursorOnOff(CURSOR_OFF, POSITION_OFF);
-
-	_delay_ms(1000);
-
-	for (i = 0 ; i < 30; i++)
-	{
-		if(i < 16)
-			lcdSetCursor(0, i);
-		else
-			lcdSetCursor(1, i-16);
-		lcdWriteChar(i+8);
-		_delay_ms(500);
-	}
-
-	_delay_ms(2000);
-
-	lcdCursorOnOff(CURSOR_ON, POSITION_OFF);
-
-	_delay_ms(2000);
-
-	lcdOnOff(LCD_OFF);
-
-	_delay_ms(1000);
-
-	lcdOnOff(LCD_ON);
-*/
-    //Sleep mode setzen(configurieren)
-//    set_sleep_mode(SLEEP_MODE_IDLE);
-//	while (1){
-//        sleep_mode(); //save power
-//	} //endlessly
-
-/*we never reach this*/
-//return 0;
-//}
-
 
 
 

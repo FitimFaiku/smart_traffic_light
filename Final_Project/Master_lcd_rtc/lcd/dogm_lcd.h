@@ -110,10 +110,9 @@ void lcdSetCursor(uint8_t row, uint8_t col);
 void lcdCursorOnOff(uint8_t cursorOnOff, uint8_t positionOnOff);
 void LCD_and_Spi_Init();
 void setTime(uint8_t counter, uint8_t hour, uint8_t minutes, uint8_t seconds);
-
-void set_hour(uint8_t hour);
-void set_minutes(uint8_t minutes);
-void set_seconds(uint8_t seconds);
+void set_hour(uint8_t given_hour);
+void set_minutes(uint8_t given_minutes);
+void set_seconds(uint8_t given_seconds);
 void set_counter_till_next_interval(int8_t counter_till_next_interval);
 void show_and_update_time_menue();
 void show_and_update_counter_interval_menue();

@@ -72,8 +72,9 @@ void lcdSpiInit()
 	// SPE...SPI Enable Bit
 	// MSTR...Master SPI Mode
 	// SPR1...SCK Frequency set to Fosc/32
-	SPSR |= (1<<SPI2X);  
-	SPCR |= ((1<<SPE) | (1<<MSTR) | (1<<SPR1) | (1<<CPOL) | (1<<CPHA));
+	//SPSR |= (1<<SPI2X);  
+	//SPCR |= ((1<<SPE) | (1<<MSTR) | (1<<SPR1) | (1<<CPOL) | (1<<CPHA));
+	//SPCR |= (1 << SPE) | (1 << MSTR) | (1 << SPR0) | (1 << SPR1);
 }
 
 /*********************************************************************/
