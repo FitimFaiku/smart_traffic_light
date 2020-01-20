@@ -54,10 +54,9 @@ void DS13xx_Read_CLK_Registers(void);
 //0b1000001=41=A
 //0b1010000=50
 //0b1011000=58='0'
-unsigned char ClockSecond = 0b00000000; //00 0000000=00 -> 00
-unsigned char ClockMinute = 0b01011001; //59 0101=5 1001=9 --> 59 
-unsigned  char ClockHour = 0b00000101; //05  0000=0 0101=0 -> 05
-
+unsigned char ClockSecond = 0b01000000; //40 100=4 0000=0 -> 40
+unsigned char ClockMinute = 0b01000000;
+unsigned  char ClockHour = 0b00010011; //13  0001=1 0011=3 -> 13
 //unsigned char ClockDay;
 //unsigned char ClockMonth;
 
@@ -214,7 +213,7 @@ void DS13xx_Write_CLK_Registers(void) { // initialize time & date from user entr
 }
 
 uint8_t get_current_hour(void){
-	unsigned char clock_hour = ClockHour;
+	unsigned char clock_hour = 0b00010011;
 	DS13xx_WriteByte(0x85);	// for reading the hour
 	clock_hour = DS13xx_ReadByte();
 	clock_hour = (clock_hour & 0x0F) + ((clock_hour & 0x10)>>4)*10;
@@ -225,8 +224,8 @@ uint8_t get_current_hour(void){
 }
 
 uint8_t get_current_minute(void){
-	unsigned char clock_minute = ClockMinute;
-	DS13xx_WriteByte(0x83);	// for reading the hour
+	unsigned char clock_minute = 0b00010011;
+	DS13xx_WriteByte(0x85);	// for reading the hour
 	clock_minute = DS13xx_ReadByte();
 	clock_minute = (clock_minute & 0x0F) + ((clock_minute & 0x70)>>4)*10;
 	DS13xx_Reset();
