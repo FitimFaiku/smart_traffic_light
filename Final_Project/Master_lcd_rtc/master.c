@@ -58,16 +58,16 @@ void do_action();
 
 static int16_t delay_for_communication_between_traffic_cycles_ms = 50;
 static int16_t delay_before_first_cycle = 500;
-static int16_t delay_between_green_blink_and_orange_or_red = 6000;
+static int16_t delay_between_green_blink_and_orange_or_red = 5000;
 static int16_t delay_between_orange_and_red_or_green = 5000;
 static int16_t delay_between_one_slave_red_and_other_start = 3000;
 
 static uint8_t counter_cycle = 0;
-
+static uint8_t counter_button_clicked_ms = 0;
 
 static volatile char next_state = '0';
 static int16_t counter_delay_ms=0;
-static volatile uint8_t current_hour;
+static volatile uint8_t current_hour=5;
 static volatile uint8_t current_minute;
 static volatile int8_t counter_till_next_interval;
 static volatile char last_state; 
@@ -160,29 +160,24 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
     static uint8_t menueopencounter=0, cnt_ms=0,cnt_ms_ten=0, cnt_s=0; // gloabl lifetime, local visibillity Counter for miliseconds
     TCNT0 = 6; // counter auf 6 --> jede 256-6= 250 ticks --> 1 ms
     counter_delay_ms++;
-    // SS_SELECT_SLAVE_1
-    //_delay_ms(100);
-    // uint8_t slaveValue = SPI_MasterTransmit('3');
-    // uart_transmit(slaveValue + 48);
-    // SS_UNSELECT_SLAVE_1
-    
-    /*SS_SELECT_SLAVE_1
-    uint8_t slaveValue = SPI_MasterTransmit('x');
-    SS_UNSELECT_SLAVE_1
-    uart_transmit(slaveValue);*/
-   
-
-    // $$$$$$$$$$$$$$$$ Anfang check
+    counter_button_clicked_ms++;
     set_hour(current_hour);
     
-    
-    
+    if(counter_button_clicked_ms>=100){
+		// check if button is clicked
+		if((PIND & (1<<PD2)) == 0){
+			uart_transmit_string("Button clicked switch menue !!!\n\r");
+			change_menue();
+		}
+		counter_button_clicked_ms=0;
+	}
     if(cnt_ms++>=100){
 		cnt_ms_ten++;
 		cnt_ms=0;
 	} 
     if(cnt_ms_ten>10){
         cnt_s++;
+        //DS13xx_Read_CLK_Registers();
         counter_to_do_action_seconds++;
         counter_till_next_interval--;
         if(counter_till_next_interval>=0){
@@ -196,6 +191,7 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
             current_minute++;
             if(current_minute>=60){
                 current_hour++;
+                check_current_hour_and_initialize_volatile_variables();
                 if(current_hour>=24){
                     current_hour=0;
                 }
@@ -216,20 +212,17 @@ ISR(TIMER0_OVF_vect){ // timer 0 overflow interrupt service routine (1 ms)
 }
 
 void set_traffic_light_cars_red_and_walkers_green() {
-    // Switch Yellow Car -(?msTODO)-> Switch Red Car -(?msTODO)->Switch green for Walkers Traffic Light
+    // Switch Yellow Car --> Switch Red Car -->Switch green for Walkers Traffic Light
     counter_delay_ms=0;
     counter_cycle=0;
     is_cycling_traffic_light_walkers_green = true;
-    uart_transmit_string("is_cycling_traffic_light_walkers_green setting true \n\r");
-
 }
 
 void set_traffic_light_walkers_red_and_cars_green() {
     counter_delay_ms = 0; 
     counter_cycle=0;
     is_cycling_traffic_light_cars_green = true;
-    uart_transmit_string("is_cycling_traffic_light_cars_green setting true \n\r");
-    // Switch Red Walkers traffic Light -(?msTODO)-> Switch Yellow Cars Traffic Light -(?msTODO)->Switch green for Cars Traffic Light
+    // Switch Red Walkers traffic Light --> Switch Yellow Cars Traffic Light -->Switch green for Cars Traffic Light
 }
 
 void check_slave_message_should_action(){
@@ -239,7 +232,7 @@ void check_slave_message_should_action(){
     uint8_t slave_message_pkw = 0;
     uint8_t slave_message_walker = 0;
     
-     // When Walkers is waiting and currently has red TODO slave_message_int+48
+     // When Walkers is waiting and currently has red
     if(is_day_mode  && counter_to_do_action_seconds>=5 && !is_cycling_traffic_light_cars_green && !is_cycling_traffic_light_walkers_green){
         uart_transmit_string("0. Gesendet: Check if Someone is near the Traffic Light master --> slave request \n\r");
         //see --> 5) Check if Someone is near the <b>Walkers -- Slave 2</b> Traffic Light master --> slave request
@@ -299,30 +292,37 @@ void check_current_hour_and_initialize_volatile_variables(){
     current_hour = get_current_hour();
     //current_hour = 20;
     current_minute = get_current_minute(); 
-    //current_minute = 0;
-    // 21-6:00 Nachtmodus TODO right times here
+    //current_minute = 59;
+    // 21-6:00 Nachtmodus 
 
     set_hour(current_hour);
     set_minutes(current_minute);
-    set_seconds(0);
     if(current_hour>=21 || current_hour<6){ 
         should_action = true;
         //Night mode
-        uart_transmit_string("Nachtmodus");
-        //uart_transmit(current_hour+48);
         uart_transmit_string("Nachtmodus, status: ");
-        SS_SELECT_SLAVE_2
+        SS_SELECT_SLAVE_1
         //_delay_ms(delay_for_communication_between_traffic_cycles_ms);
         SPI_MasterTransmit('7');
         uart_transmit_string("7. Gesendet: Blink <b>Cars</b> Traffic Light Orange\n\r");
+        SS_UNSELECT_SLAVE_1
+        
+        SS_SELECT_SLAVE_2
+        //_delay_ms(delay_for_communication_between_traffic_cycles_ms);
+        SPI_MasterTransmit('7');
+        uart_transmit_string("7. Gesendet: Blink <b>Walkers</b> Traffic Light Orange\n\r");
         SS_UNSELECT_SLAVE_2
         is_day_mode = false;
+        next_state = '7';
     } else {
-        should_action = true;
-        // Day mode
-        uart_transmit_string("Tagesmodus");
-        set_traffic_light_cars_red_and_walkers_green();
-        is_day_mode = true;
+        if(next_state != '3' && next_state!='4'){
+			should_action = true;
+			// Day mode
+			uart_transmit_string("Tagesmodus");
+			set_traffic_light_cars_red_and_walkers_green();
+			is_day_mode = true;
+		}
+        
     }
 }
 
@@ -331,6 +331,8 @@ void init(){
     // Init uart with baudrate
     uart_init(115200);
     uart_transmit_string("I bims der Master\n\r");
+    
+    PORTD |= (1<<PD2);
 
     //Is done in spi masterINIT
     //PORT_DIRECTION |= (1<<SS);
@@ -339,7 +341,7 @@ void init(){
     SPI_MasterInit();
     // INIT for the real time clock
     init_DS13xx();
-
+	DS13xx_Write_CLK_Registers();
     // Initialize the SPI interface for the LCD display
     // Initialize the LCD display
     LCD_and_Spi_Init();
@@ -430,6 +432,7 @@ void execute_state_mashine_cars_green(){
 			next_state = '3';
             counter_to_do_action_seconds = 0;
             counter_till_next_interval = 30;
+            set_counter_till_next_interval(counter_till_next_interval);
             
 		}
     }
@@ -490,6 +493,7 @@ void execute_state_mashine_walkers_green(){
 			next_state = '4'; // Next is cars schould get green
             counter_to_do_action_seconds = 0;
             counter_till_next_interval = 30;
+            set_counter_till_next_interval(counter_till_next_interval);
 		}
 	}  
 }
